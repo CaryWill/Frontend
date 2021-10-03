@@ -1,5 +1,5 @@
 // TODO: Date, RegexExp, function clone
-// 这里没有对函数做深拷贝，因为函数更多的是完成提供处理数据的能力，所以不需要做深拷贝（根据需要来。
+// 这里没有对函数做深拷贝，因为函数更多的是完成提供处理数据的能力，所以不需要做深拷贝（根据需要来
 // 递归式
 const deepCopy = (value) => {
   const map = new WeakMap();
@@ -18,6 +18,7 @@ const deepCopy = (value) => {
     result = {};
     // 将我们克隆的值存起来，用原来的引用值做 key
     map.set(value, result);
+    // 暂未处理 key 为 Symbol 的情况
     for (const key in value) {
       if (value[key] !== null && typeof value[key] === "object") {
         result[key] = deepCopy(value[key]);
