@@ -32,3 +32,6 @@ target.target1.target = target.target2;
 
 let newObj = deepCopy(target);
 console.log(newObj);
+arr.push(123);
+target.object.key.key1.value1 = 'test';
+
