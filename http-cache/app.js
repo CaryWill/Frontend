@@ -16,12 +16,13 @@ let app = http.createServer((req, res) => {
       break;
   }
 
-  res.removeHeader('Cache-Control');
+  res.removeHeader("Cache-Control");
 
   fs.readFile(filePath, function (error, content) {
     res.writeHead(200, {
       "Content-Type": contentType,
-      Expires: "Wed, 21 Oct 2022 07:28:00 GMT",
+      // Expires: "Wed, 21 Oct 2022 07:28:00 GMT",
+      "Cache-Control": "public,max-age=10",
     });
     res.end(content, "utf-8");
   });
