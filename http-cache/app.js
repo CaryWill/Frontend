@@ -1,14 +1,23 @@
-const http = require("http");
+var http = require("http");
+var fs = require("fs");
+var path = require("path");
 
 // Create an instance of the http server to handle HTTP requests
 let app = http.createServer((req, res) => {
-  // Set a response type of plain text for the response
-  res.writeHead(200, { "Content-Type": "text/html" });
+  var filePath = "." + req.url;
+  if (filePath == "./") filePath = "./index.html";
+  var extname = path.extname(filePath);
+  var contentType = "text/html";
+  switch (extname) {
+    case ".js":
+      contentType = "text/javascript";
+      break;
+  }
 
-  // Send back a response and end the connection
-  res.end(
-    '<!DOCTYPE html><html lang="en"><head><title>Document</title></head><body>Http Cache Demo<script src="/demo.js"></script></body></html>'
-  );
+  fs.readFile(filePath, function (error, content) {
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(content, "utf-8");
+  });
 });
 
 // Start the server on port 3000
