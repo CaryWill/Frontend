@@ -1,6 +1,8 @@
+// Test on Macos Only
 var http = require("http");
 var fs = require("fs");
 var path = require("path");
+var open = (url) => require("child_process").exec(`open ${url}`);
 
 // Create an instance of the http server to handle HTTP requests
 let app = http.createServer((req, res) => {
@@ -22,4 +24,5 @@ let app = http.createServer((req, res) => {
 
 // Start the server on port 3000
 app.listen(3000, "127.0.0.1");
+open("http://localhost:3000/");
 console.log("Node server running on port 3000");
