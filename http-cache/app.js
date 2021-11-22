@@ -1,30 +1,16 @@
-// demo 来自 https://juejin.cn/post/6844903655619969038
+const http = require("http");
 
-const express = require("express");
-const app = express();
-const port = 8080;
-const fs = require("fs");
-const path = require("path");
+// Create an instance of the http server to handle HTTP requests
+let app = http.createServer((req, res) => {
+  // Set a response type of plain text for the response
+  res.writeHead(200, { "Content-Type": "text/html" });
 
-app.get("/", (req, res) => {
-  res.send(`<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <title>Document</title>
-    </head>
-    <body>
-        Http Cache Demo
-        <script src="/demo.js"></script>
-    </body>
-    </html>`);
+  // Send back a response and end the connection
+  res.end(
+    '<!DOCTYPE html><html lang="en"><head><title>Document</title></head><body>Http Cache Demo<script src="/demo.js"></script></body></html>'
+  );
 });
 
-app.get("/demo.js", (req, res) => {
-  let jsPath = path.resolve(__dirname, "./static/js/demo.js");
-  let cont = fs.readFileSync(jsPath);
-  res.end(cont);
-});
-
-app.listen(port, () => {
-  console.log(`listen on ${port}`);
-});
+// Start the server on port 3000
+app.listen(3000, "127.0.0.1");
+console.log("Node server running on port 3000");
