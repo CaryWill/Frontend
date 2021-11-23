@@ -3,6 +3,8 @@ var http = require("http");
 var fs = require("fs");
 var path = require("path");
 var open = (url) => require("child_process").exec(`open ${url}`);
+var hash = (str) =>
+  require("crypto").createHash("md5").update(str).digest("hex");
 
 // Create an instance of the http server to handle HTTP requests
 let app = http.createServer((req, res) => {
@@ -16,9 +18,8 @@ let app = http.createServer((req, res) => {
       break;
   }
 
-  res.removeHeader("Cache-Control");
-
   fs.readFile(filePath, function (error, content) {
+    // res.removeHeader("Cache-Control");
     res.writeHead(200, {
       "Content-Type": contentType,
       // Expires: "Wed, 21 Oct 2022 07:28:00 GMT",
