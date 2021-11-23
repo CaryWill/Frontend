@@ -46,7 +46,7 @@ let app = http.createServer((req, res) => {
       res.end();
     } else {
       res.writeHead(200, {
-        "Cache-Control": "public,max-age=0",
+        "Cache-Control": "public,max-age=10",
         ETag: etag,
       });
       res.end(content);
