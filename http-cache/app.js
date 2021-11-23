@@ -27,16 +27,27 @@ let app = http.createServer((req, res) => {
       // Expires: "Wed, 21 Oct 2022 07:28:00 GMT",
       // "Cache-Control": "public,max-age=10",
     });
-    let status = fs.statSync(filePath);
-    let lastModified = status.mtime.toUTCString();
-    if (lastModified === req.headers["if-modified-since"]) {
+    // let status = fs.statSync(filePath);
+    // let lastModified = status.mtime.toUTCString();
+    // if (lastModified === req.headers["if-modified-since"]) {
+    //   res.writeHead(304, "Not Modified");
+    //   res.end();
+    // } else {
+    //   res.writeHead(200, "OK");
+    //   res.writeHead(200, {
+    //     "Cache-Control": "public,max-age=10",
+    //     "Last-Modified": lastModified,
+    //   });
+    //   res.end(content);
+    // }
+    let etag = hash(content);
+    if (req.headers["if-none-match"] === etag) {
       res.writeHead(304, "Not Modified");
       res.end();
     } else {
-      res.writeHead(200, "OK");
       res.writeHead(200, {
-        "Cache-Control": "public,max-age=10",
-        "Last-Modified": lastModified,
+        "Cache-Control": "public,max-age=0",
+        ETag: etag,
       });
       res.end(content);
     }
