@@ -1,4 +1,5 @@
-import { deepCopy } from "./index.js";
+// import { deepCopy } from "./index.js";
+import { deepCopy } from "./revisited";
 
 const obj = { x: 1, y: { key: 123 } };
 const objShallowCopy = { ...obj };

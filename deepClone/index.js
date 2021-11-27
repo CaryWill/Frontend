@@ -1,8 +1,7 @@
 // TODO: Date, RegexExp, function clone
 // 这里没有对函数做深拷贝，因为函数更多的是完成提供处理数据的能力，所以不需要做深拷贝（根据需要来
 // 递归式
-const deepCopy = (value) => {
-  const map = new WeakMap();
+const deepCopy = (value, map = new WeakMap()) => {
   let result;
   // 循环引用或者相同引用的时候直接使用之前缓存的值
   if (map.has(value)) return map.get(value);
@@ -11,7 +10,7 @@ const deepCopy = (value) => {
     result = [];
     map.set(value, result);
     value.forEach((v) => {
-      result.push(deepCopy(v));
+      result.push(deepCopy(v, map));
     });
     return result;
   } else if (typeof value === "object") {
@@ -21,9 +20,9 @@ const deepCopy = (value) => {
     // 暂未处理 key 为 Symbol 的情况
     for (const key in value) {
       if (value[key] !== null && typeof value[key] === "object") {
-        result[key] = deepCopy(value[key]);
+        result[key] = deepCopy(value[key], map);
       } else {
-        result[key] = result;
+        result[key] = value[key];
       }
     }
     return result;
