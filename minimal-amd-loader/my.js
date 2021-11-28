@@ -1,6 +1,7 @@
 // index 文件是别人的 只是分析下
 // 现在自己手写看下理解了没
 // draft
+// https://github.com/CaryWill/Frontend/tree/master/minimal-amd-loader
 
 (function () {
   const moduleMap = {}; // 已经定义好的模块 // 也就是一个模块里所有依赖都以完成了定义的模块
