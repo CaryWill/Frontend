@@ -28,7 +28,6 @@
   }
 
   window.require = function (deps, definition) {
-    debugger;
     if (deps.length === 0) {
       // no dependencies, run definition now
       definition();
