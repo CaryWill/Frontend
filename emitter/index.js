@@ -3,33 +3,37 @@ function Emitter() {
 
   this.on = (event, cb) => {
     if (!map[event]) {
-      map[event] = { on: [], once: [] };
+      map[event] = [];
     }
-    map[event].on.push(cb);
+    map[event].push(cb);
   };
 
   this.once = (event, cb) => {
     if (!map[event]) {
-      map[event] = { on: [], once: [] };
+      map[event] = [];
     }
-    map[event].once.push(cb);
+    const _cb = (...args) => {
+      cb(...args);
+      this.off(event, _cb);
+    };
+    this.on(event, _cb);
   };
 
-  this.emit = (event) => {
+  this.emit = (event, ...args) => {
     if (!map[event]) return;
-    map[event].on.forEach(cb);
-    map[event].once.forEach(cb);
-    map[event].once.length = 0;
+    map[event].forEach((cb) => cb(...args));
   };
 
-  this.off = (event) => {
+  this.off = (event, cb) => {
     if (!map[event]) return;
-    map[event].on.length = 0;
-    map[event].once.length = 0;
+    const index = map[event].findIndex((item) => item === cb);
+    if (index !== -1) {
+      map[event].splice(index, 1);
+    }
   };
 }
 
 const emitter = new Emitter();
-emitter.on("test", () => console.log("test"));
+emitter.once("test", () => console.log("test"));
 emitter.emit("test");
 emitter.emit("test");
