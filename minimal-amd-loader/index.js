@@ -48,6 +48,7 @@
   };
 
   window.define = function (name, deps, definition) {
+    debugger;
     if (!definition) {
       // 如果没有定义的时候什么意思
       // just two arguments - bind name to value (deps) now
