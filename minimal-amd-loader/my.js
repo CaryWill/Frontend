@@ -75,7 +75,6 @@
    * @param {*} definition 该模块的定义
    */
   window.define = function (name, deps, definition) {
-    debugger;
     window.require(deps, function (...args) {
       resolve(name, definition(...args));
     });
