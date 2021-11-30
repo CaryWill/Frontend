@@ -1,0 +1,71 @@
+<!-- https://reactjs.org/docs/add-react-to-a-website.html -->
+<!-- https://codesandbox.io/s/amd-apploader-og1z5?file=/src/Apploader.js -->
+<!-- https://cdnjs.com/libraries/react-dom/16.13.0 -->
+<!-- http://fooo.fr/~vjeux/fb/vjeux-test/test-event-boundary.html  -->
+<!-- NOTE: 测试两个 不同版本的 react 嵌套在一起的时候 stopPropgation 的 bug -->
+<script src="./require.min.js"></script>
+<script>
+  window.require.config({
+    paths: {
+      react: "../src/react16.14.development",
+      react2: "../src/react.16.13.development",
+      "react-dom": "../src/react-dom16.14.development.min",
+      "react-dom2": "../src/react-dom16.13.development.min",
+    },
+  });
+</script>
+<div id="root"></div>
+<script>
+  window.require(
+    ["react", "react-dom", "react2", "react-dom2"],
+    function (React, ReactDOM, React2, ReactDOM2) {
+      const e = React.createElement;
+
+      class InnerComponent extends React.Component {
+        render() {
+          return e(
+            "div",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                console.log("innerOnClick");
+              },
+              style: { border: "1px solid blue", padding: 50 },
+            },
+            React.createElement("div", { ref: "inner" })
+          );
+        }
+      }
+
+      class OuterComponent extends React.Component {
+        outerOnClick = function (e) {
+          e.stopPropagation();
+          console.log("outerOnClick");
+        };
+
+        componentDidMount = function () {
+          ReactDOM2.render(
+            React2.createElement(InnerComponent),
+            this.refs.inner
+          );
+        };
+
+        render() {
+          return e(
+            "div",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                console.log("outerOnClick");
+              },
+              style: { border: "1px solid red", padding: 20 },
+            },
+            React.createElement("div", { ref: "inner" })
+          );
+        }
+      }
+
+      ReactDOM.render(e(OuterComponent), document.getElementById("root"));
+    }
+  );
+</script>
