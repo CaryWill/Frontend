@@ -35,7 +35,16 @@
               },
               style: { border: "1px solid blue", padding: 50 },
             },
-            React.createElement("div", { ref: "inner" })
+            React.createElement(
+              "div",
+              {
+                className: "inner",
+                onClick: (e) => {
+                  console.log("---inner react---");
+                },
+              },
+              "inner"
+            )
           );
         }
       }
@@ -63,7 +72,14 @@
               },
               style: { border: "1px solid red", padding: 20 },
             },
-            React.createElement("div", { ref: "inner" })
+            React.createElement("div", {
+              ref: "inner",
+              className: "outer",
+              onClick: (e) => {
+                console.log("---outer---");
+              },
+            }),
+            "outer"
           );
         }
       }
