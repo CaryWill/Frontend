@@ -66,13 +66,11 @@
 
       class OuterComponent extends React.Component {
         componentDidMount = function () {
-          // React 17
-          ReactDOM3.render(React3.createElement(React17), this.refs.inner);
           // React 16 v2
-          // ReactDOM2.render(
-          //    React2.createElement(InnerComponent),
-          //   this.refs.inner
-          // );
+          ReactDOM2.render(
+            React2.createElement(InnerComponent),
+            this.refs.inner
+          );
         };
 
         render() {
