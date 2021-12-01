@@ -37,18 +37,11 @@
                 e.stopPropagation();
                 console.log("outer react 17 OnClick");
               },
-              style: { border: "1px solid pink", padding: 50 },
+              style: { border: "1px solid blue", padding: 50 },
             },
-            React3.createElement(
-              "div",
-              {
-                className: "inner-react17",
-                onClick: (e) => {
-                  console.log("---inner react 17---");
-                },
-              },
-              "17"
-            )
+            React3.createElement("div", {
+              className: "inner-react17",
+            })
           );
         }
       }
@@ -64,34 +57,22 @@
               },
               style: { border: "1px solid blue", padding: 50 },
             },
-            React2.createElement(
-              "div",
-              {
-                className: "inner",
-                onClick: (e) => {
-                  console.log("---inner react---");
-                },
-              },
-              "inner"
-            )
+            React2.createElement("div", {
+              className: "inner",
+            })
           );
         }
       }
 
       class OuterComponent extends React.Component {
-        outerOnClick = function (e) {
-          e.stopPropagation();
-          console.log("outerOnClick");
-        };
-
         componentDidMount = function () {
           // React 17
           ReactDOM3.render(React3.createElement(React17), this.refs.inner);
           // React 16 v2
-          //   ReactDOM2.render(
-          //      React2.createElement(InnerComponent),
-          //     this.refs.inner
-          //   );
+          // ReactDOM2.render(
+          //    React2.createElement(InnerComponent),
+          //   this.refs.inner
+          // );
         };
 
         render() {
@@ -107,11 +88,7 @@
             React.createElement("div", {
               ref: "inner",
               className: "outer",
-              onClick: (e) => {
-                console.log("---outer---");
-              },
-            }),
-            "outer"
+            })
           );
         }
       }
