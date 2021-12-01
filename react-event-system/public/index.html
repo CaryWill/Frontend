@@ -12,39 +12,18 @@
     paths: {
       react: "../react16.14.development",
       react2: "./react.16.13.development",
-      react3: "./react.development17",
       "react-dom": "./react-dom16.14.development",
       "react-dom2": "./react-dom16.13.development",
-      "react-dom3": "./react-dom.development17",
     },
   });
 </script>
 <div id="root"></div>
 <script>
   window.require(
-    ["react", "react-dom", "react2", "react-dom2", "react3", "react-dom3"],
-    function (React, ReactDOM, React2, ReactDOM2, React3, ReactDOM3) {
+    ["react", "react-dom", "react2", "react-dom2"],
+    function (React, ReactDOM, React2, ReactDOM2) {
       const e = React.createElement;
       const e2 = React2.createElement;
-      const e3 = React3.createElement;
-
-      class React17 extends React3.Component {
-        render() {
-          return e3(
-            "div",
-            {
-              onClick: (e) => {
-                e.stopPropagation();
-                console.log("outer react 17 OnClick");
-              },
-              style: { border: "1px solid blue", padding: 50 },
-            },
-            React3.createElement("div", {
-              className: "inner-react17",
-            })
-          );
-        }
-      }
 
       class InnerComponent extends React2.Component {
         render() {
@@ -66,7 +45,7 @@
 
       class OuterComponent extends React.Component {
         componentDidMount = function () {
-          // React 16 v2
+          // React 16.13 
           ReactDOM2.render(
             React2.createElement(InnerComponent),
             this.refs.inner
