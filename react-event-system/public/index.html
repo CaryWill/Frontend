@@ -26,6 +26,32 @@
     function (React, ReactDOM, React2, ReactDOM2, React3, ReactDOM3) {
       const e = React.createElement;
       const e2 = React2.createElement;
+      const e3 = React3.createElement;
+
+      class React17 extends React3.Component {
+        render() {
+          return e3(
+            "div",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                console.log("outer react 17 OnClick");
+              },
+              style: { border: "1px solid pink", padding: 50 },
+            },
+            React3.createElement(
+              "div",
+              {
+                className: "inner-react17",
+                onClick: (e) => {
+                  console.log("---inner react 17---");
+                },
+              },
+              "17"
+            )
+          );
+        }
+      }
 
       class InnerComponent extends React2.Component {
         render() {
@@ -59,10 +85,13 @@
         };
 
         componentDidMount = function () {
-          ReactDOM2.render(
-            React2.createElement(InnerComponent),
-            this.refs.inner
-          );
+          // React 17
+          ReactDOM3.render(React3.createElement(React17), this.refs.inner);
+          // React 16 v2
+          //   ReactDOM2.render(
+          //      React2.createElement(InnerComponent),
+          //     this.refs.inner
+          //   );
         };
 
         render() {
