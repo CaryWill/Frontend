@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2021 by paullewis (http://jsbin.com/gozula/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="author" content="" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Box Style Change</title>
+
+    <style id="jsbin-css">
+      html,
+      body {
+        background: #ececec;
+      }
+
+      main .box-container .box {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+        margin: 5px;
+        position: relative;
+        will-change: transform;
+      }
+
+      button {
+        margin: 0 auto;
+        padding: 20px;
+        background: #cc0000;
+        font-size: 20px;
+        border: none;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+
+  <body>
+    <button>Click me</button>
+
+    <main>
+      <div class="box-container"></div>
+    </main>
+    <script>
+      var container = document.querySelector(".box-container");
+      var button = document.querySelector("button");
+      var count = 10000;
+
+      for (var i = 0; i < count; i++) {
+        var div = document.createElement("div");
+        div.classList.add("box");
+
+        div.innerHTML =
+          '<div class="title-container">' +
+          '<div class="title">Box ' +
+          (i + 1) +
+          "</div>" +
+          "</div>";
+
+        if (i === count - 1) div.classList.add("box--last");
+
+        container.appendChild(div);
+      }
+
+      button.addEventListener("click", function () {
+        var selectors = [
+          "div.box:not(:empty):last-of-type .title",
+          ".box--last > .title-container > .title",
+          ".box:nth-last-child(-n+1) .title",
+        ];
+
+        selectors.forEach(function (s) {
+          console.time(s);
+          var d = document.querySelector(s);
+          console.timeEnd(s);
+          console.log(d);
+        });
+      });
+    </script>
+  </body>
+</html>
