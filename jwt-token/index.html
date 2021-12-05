@@ -1,6 +1,13 @@
+<head>
+  <style>
+    button {
+      display: block;
+    }
+  </style>
+</head>
+
 <script>
   function login() {
-    // set jwt
     fetch("/login", {
       method: 'POST',
       headers: {
@@ -15,17 +22,38 @@
       .then((res) => res.json())
       .then((res) => {
         localStorage.setItem('jwttoken', res.accessToken);
-        console.log(jwt = res.accessToken);
+        localStorage.setItem('jwtRefreshToken', res.refreshToken);
+        console.log(res.accessToken);
       });
   }
+
+  function logout() {
+    fetch("/logout", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({token: localStorage.getItem('jwtRefreshToken')})
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        localStorage.setItem('jwttoken', res.accessToken);
+        localStorage.setItem('jwtRefreshToken', res.refreshToken);
+        console.log(res.accessToken);
+      });
+  }
+
   function sendWithValidJWT() {
     fetch("/checkJwt", {
       headers: {
-        "Authorization": `Bearer ${jwt}`
+        "Authorization": `Bearer ${localStorage.getItem('jwttoken')}`
       }
     }).then((res) => res.json())
       .then((res) => {
-        console.log(res,'res');
+        console.log(res, 'res');
+      }).catch(err => {
+        console.error(err);
       });
   }
 
@@ -41,12 +69,34 @@
       headers: {
         "Authorization": `Bearer ${fakeJWT.join('.')}`
       }
+    }).then((res) => res.json())
+      .then((res) => {
+        console.log(res, 'res');
+      }).catch(err => {
+        console.error(err);
+      });
+  }
+
+  function refreshAccessToken() {
+    fetch("/refreshToken", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({token: localStorage.getItem('jwtRefreshToken')})
+    }).then((res) => res.json()).then((res) => {
+      // 重置 access token
+      localStorage.setItem('jwttoken', res.accessToken);
+      console.log(res.accessToken);
     });
   }
 </script>
 
 <body>
   <button onclick="login()">login</button>
+  <button onclick="logout()">logout</button>
+  <button onclick="refreshAccessToken()">refreshToken</button>
   <button onclick="sendWithValidJWT()">send with valid JWT token</button>
   <button onclick="sendWithInvalidJWT()">send with invalid JWT token</button>
   </bod>
