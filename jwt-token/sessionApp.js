@@ -26,8 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 //username and password
 const myusername = "user1";
 const mypassword = "mypassword";
-const myusername2 = "user2";
-const mypassword2 = "mypassword2";
 
 // a variable to save a session
 var session;
@@ -41,10 +39,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  if (
-    (req.body.username == myusername && req.body.password == mypassword) ||
-    (req.body.username == myusername2 && req.body.password == mypassword2)
-  ) {
+  if (req.body.username == myusername && req.body.password == mypassword) {
     session = req.session;
     session.userid = req.body.username;
     console.log(req.session);
