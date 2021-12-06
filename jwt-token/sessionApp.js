@@ -26,6 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 //username and password
 const myusername = "user1";
 const mypassword = "mypassword";
+const myusername2 = "user2";
+const mypassword2 = "mypassword2";
 
 // a variable to save a session
 var session;
@@ -33,16 +35,20 @@ var session;
 app.get("/", (req, res) => {
   session = req.session;
   if (session.userid) {
-    res.send("Welcome User <a href='/logout'>click to logout</a>");
+    console.log("logged in");
+    res.sendFile(path.join(__dirname, "/session.html"));
   } else res.sendFile(path.join(__dirname, "/session.html"));
 });
 
 app.post("/login", (req, res) => {
-  if (req.body.username == myusername && req.body.password == mypassword) {
+  if (
+    (req.body.username == myusername && req.body.password == mypassword) ||
+    (req.body.username == myusername2 && req.body.password == mypassword2)
+  ) {
     session = req.session;
     session.userid = req.body.username;
     console.log(req.session);
-    res.send(`Hey there, welcome <a href=\'/logout'>click to logout</a>`);
+    res.send("logged in");
   } else {
     res.send("Invalid username or password");
   }
@@ -50,7 +56,16 @@ app.post("/login", (req, res) => {
 
 app.get("/logout", (req, res) => {
   req.session.destroy();
+  console.log(session, req.session);
   res.redirect("/");
+});
+
+app.post("/getData", (req, res) => {
+  if (req.session.userid) {
+    res.send("true");
+  } else {
+    res.send("false");
+  }
 });
 
 app.listen(PORT, () => {

@@ -9,37 +9,37 @@
 <script>
   function login() {
     fetch("/login", {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        "username": "john",
-        "password": "password123admin"
-      })
+        username: "john",
+        password: "password123admin",
+      }),
     })
       .then((res) => res.json())
       .then((res) => {
-        localStorage.setItem('jwttoken', res.accessToken);
-        localStorage.setItem('jwtRefreshToken', res.refreshToken);
+        localStorage.setItem("jwttoken", res.accessToken);
+        localStorage.setItem("jwtRefreshToken", res.refreshToken);
         console.log(res.accessToken);
       });
   }
 
   function logout() {
     fetch("/logout", {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({token: localStorage.getItem('jwtRefreshToken')})
+      body: JSON.stringify({ token: localStorage.getItem("jwtRefreshToken") }),
     })
       .then((res) => res.json())
       .then((res) => {
-        localStorage.setItem('jwttoken', res.accessToken);
-        localStorage.setItem('jwtRefreshToken', res.refreshToken);
+        localStorage.setItem("jwttoken", res.accessToken);
+        localStorage.setItem("jwtRefreshToken", res.refreshToken);
         console.log(res.accessToken);
       });
   }
@@ -47,12 +47,14 @@
   function sendWithValidJWT() {
     fetch("/checkJwt", {
       headers: {
-        "Authorization": `Bearer ${localStorage.getItem('jwttoken')}`
-      }
-    }).then((res) => res.json())
+        Authorization: `Bearer ${localStorage.getItem("jwttoken")}`,
+      },
+    })
+      .then((res) => res.json())
       .then((res) => {
-        console.log(res, 'res');
-      }).catch(err => {
+        console.log(res, "res");
+      })
+      .catch((err) => {
         console.error(err);
       });
   }
@@ -60,36 +62,42 @@
   // 如果有人想修改 jwt 的 payload 的话，会鉴权失败
   function sendWithInvalidJWT() {
     // 修该 jwt token 的 payload 数据
-    const payload = JSON.parse(atob(localStorage.getItem('jwttoken').split('.')[1]));
+    const payload = JSON.parse(
+      atob(localStorage.getItem("jwttoken").split(".")[1])
+    );
     // {username: "john", role: "admin", iat: 1638709735}
-    payload.role = 'su';
-    const fakeJWT = localStorage.getItem('jwttoken').split('.');
+    payload.role = "su";
+    const fakeJWT = localStorage.getItem("jwttoken").split(".");
     fakeJWT[1] = btoa(payload);
     fetch("/checkJwt", {
       headers: {
-        "Authorization": `Bearer ${fakeJWT.join('.')}`
-      }
-    }).then((res) => res.json())
+        Authorization: `Bearer ${fakeJWT.join(".")}`,
+      },
+    })
+      .then((res) => res.json())
       .then((res) => {
-        console.log(res, 'res');
-      }).catch(err => {
+        console.log(res, "res");
+      })
+      .catch((err) => {
         console.error(err);
       });
   }
 
   function refreshAccessToken() {
     fetch("/refreshToken", {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({token: localStorage.getItem('jwtRefreshToken')})
-    }).then((res) => res.json()).then((res) => {
-      // 重置 access token
-      localStorage.setItem('jwttoken', res.accessToken);
-      console.log(res.accessToken);
-    });
+      body: JSON.stringify({ token: localStorage.getItem("jwtRefreshToken") }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        // 重置 access token
+        localStorage.setItem("jwttoken", res.accessToken);
+        console.log(res.accessToken);
+      });
   }
 </script>
 
@@ -99,4 +107,4 @@
   <button onclick="refreshAccessToken()">refreshToken</button>
   <button onclick="sendWithValidJWT()">send with valid JWT token</button>
   <button onclick="sendWithInvalidJWT()">send with invalid JWT token</button>
-  </bod>
+</body>

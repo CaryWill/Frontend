@@ -1,58 +1,55 @@
-<html>
-  <head>
-    <style>
-      body {
-        display: flex;
-        justify-content: center;
-      }
+<head>
+  <style></style>
+</head>
+<script>
+  function login() {
+    fetch("/login", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "user1",
+        password: "mypassword",
+      }),
+    });
+  }
 
-      form {
-        display: flex;
-        flex-direction: column;
-      }
+  function login2() {
+    fetch("/login", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "user2",
+        password: "mypassword2",
+      }),
+    });
+  }
 
-      .input-field {
-        position: relative;
-        margin-top: 2rem;
-      }
-
-      .input-field input {
-        padding: 0.8rem;
-      }
-
-      form .input-field:first-child {
-        margin-bottom: 1.5rem;
-      }
-
-      form input[type="submit"] {
-        background: linear-gradient(to left, #4776e6, #8e54e9);
-        color: white;
-        border-radius: 4px;
-        margin-top: 2rem;
-        padding: 0.4rem;
-      }
-    </style>
-  </head>
-  <body>
-    <form action="/login" method="post">
-      <h2>Login</h2>
-      <div class="input-field">
-        <input
-          type="text"
-          name="username"
-          id="username"
-          placeholder="Enter Username"
-        />
-      </div>
-      <div class="input-field">
-        <input
-          type="password"
-          name="password"
-          id="password"
-          placeholder="Enter Password"
-        />
-      </div>
-      <input type="submit" value="LogIn" />
-    </form>
-  </body>
-</html>
+  function getData() {
+    fetch("/getData", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token: localStorage.getItem("jwtRefreshToken") }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        localStorage.setItem("jwttoken", res.accessToken);
+        localStorage.setItem("jwtRefreshToken", res.refreshToken);
+        console.log(res.accessToken);
+      });
+  }
+</script>
+<body>
+  <button onclick="login()">login</button>
+  <!-- <button onclick="login2()">login2</button> -->
+  <button><a href="/logout">logout</a></button>
+  <button onclick="getData()">getData</button>
+</body>
