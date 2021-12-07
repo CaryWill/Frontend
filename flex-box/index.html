@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Flexbox wrap 0 — children overflowing</title>
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      section {
+        display: flex;
+        flex-direction: row;
+        width: 500px;
+      }
+
+      article {
+        /* as flex-basis if width gets set */
+        flex: 1;
+        width: 100px;
+        height: 100px;
+      }
+
+      .three {
+        background: pink;
+        min-width: 100px;
+      }
+
+      .one {
+        min-width: 100px;
+        background: gainsboro;
+      }
+
+      .two {
+        /* width: 400px; */
+        background: firebrick;
+        flex-basis: 400px;
+        /* flex-basis: auto; */
+      }
+    </style>
+  </head>
+  <body>
+    <section>
+      <article class="one"></article>
+      <article class="two"></article>
+      <article class="three"></article>
+    </section>
+  </body>
+</html>
