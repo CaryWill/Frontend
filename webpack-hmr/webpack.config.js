@@ -1,24 +1,15 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
+let webpack = require("webpack");
+let HtmlWebpackPlugin = require("html-webpack-plugin")
+let path = require("path");
 module.exports = {
-  mode: 'development',
-  entry: {
-    index: './src/index.js',
-    print: './src/print.js',
-  },
-  devtool: 'inline-source-map',
-  devServer: {
-    contentBase: __dirname,
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Development',
-    }),
-  ],
-  output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-    clean: true,
-  },
-};
+    mode: "development",
+    entry:"./src/index.js",
+    output: {
+        filename: "[name].js",
+        path: path.resolve(__dirname, "dist")
+    },
+    plugins: [
+        new HtmlWebpackPlugin(),//输出一个html，并将打包的chunk引入
+        new webpack.HotModuleReplacementPlugin()
+    ]
+}
