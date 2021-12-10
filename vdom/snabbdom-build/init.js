@@ -368,7 +368,6 @@ export function init(modules, domApi) {
         (_e = hook === null || hook === void 0 ? void 0 : hook.postpatch) === null || _e === void 0 ? void 0 : _e.call(hook, oldVnode, vnode);
     }
     return function patch(oldVnode, vnode) {
-        debugger;
         let i, elm, parent;
         const insertedVnodeQueue = [];
         //// 每一个 module 的 prehooks-lifecycle
