@@ -206,7 +206,11 @@ export function init(modules, domApi) {
         let idxInOld;
         let elmToMove;
         let before;
+
+        // 两个数组长度不一样多的话，先 patch 完所有 vnode
         while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+
+            //// TODO: 这四个 null 怎么回事
             if (oldStartVnode == null) {
                 oldStartVnode = oldCh[++oldStartIdx]; // Vnode might have been moved left
             }
@@ -219,8 +223,13 @@ export function init(modules, domApi) {
             else if (newEndVnode == null) {
                 newEndVnode = newCh[--newEndIdx];
             }
-            ////  --- 判断是否是改了头还是改了尾 还是插入了头还是插入了尾
-            //// 插在中间相当于就是 patch 了头，然后中间的那个开始然后继续patch 中间之后的所有
+            //// end
+
+            //// NOTE: 不用硬看，如果看不懂，问下自己，如果在头部插了个 node
+            //// 如果直接对比的话？ 所有的 node 都需要 patch
+            //// 但是如果可以提前发现 只是在头部插了个 node 的话，那么
+            //// 你就可以只修改第一个 node，而保持其他 node 不变
+            //// 没移动直接 patch 即可
             else if (sameVnode(oldStartVnode, newStartVnode)) {
                 patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue);
                 oldStartVnode = oldCh[++oldStartIdx];
@@ -231,6 +240,7 @@ export function init(modules, domApi) {
                 oldEndVnode = oldCh[--oldEndIdx];
                 newEndVnode = newCh[--newEndIdx];
             }
+            //// 位置移动了 需要 insert
             else if (sameVnode(oldStartVnode, newEndVnode)) {
                 // Vnode moved right
                 patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
@@ -246,6 +256,9 @@ export function init(modules, domApi) {
                 newStartVnode = newCh[++newStartIdx];
             }
             //// --- end
+
+            //// 如果都不是
+            //// 可以利用 key 来进行高效对比
             else {
                 if (oldKeyToIdx === undefined) {
                     oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
@@ -255,11 +268,15 @@ export function init(modules, domApi) {
                     // New element
                     api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm);
                 }
+                //// 调换了位置
+                //// 好说
                 else {
                     elmToMove = oldCh[idxInOld];
+                    //// 调换的这两个 node tag 不相同 // 那么没办法复用
                     if (elmToMove.sel !== newStartVnode.sel) {
                         api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm);
                     }
+                    //// 如果这两个 node tag 相同，那么直接 patch 属性即可
                     else {
                         patchVnode(elmToMove, newStartVnode, insertedVnodeQueue);
                         oldCh[idxInOld] = undefined;
@@ -269,12 +286,35 @@ export function init(modules, domApi) {
                 newStartVnode = newCh[++newStartIdx];
             }
         }
+        //// 两端夹逼的结果
+        //// 旧的 有 有 无 无
+        //// 新的 无 有 有 无
+        //// oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx 不成立 才到这里 所以 有有的情况需要排除 无无的情况不用做什么
+        ///// 夹逼完的说明都已经 patch 和 insert 了
+        //// 所以这里可以改写下我觉的
+        // TODO: 提一个 pr 去 github 上
+        // if(oldStartIdx <= oldEndIdx) {
+        //     removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx);
+        // }
+        // if(newStartIdx <= newEndIdx) {
+        //     before = newCh[newEndIdx + 1] == null ? null : newCh[newEndIdx + 1].elm;
+        //     addVnodes(parentElm, before, newCh, newStartIdx, newEndIdx, insertedVnodeQueue);
+        // }
         if (oldStartIdx <= oldEndIdx || newStartIdx <= newEndIdx) {
+            //// 新数组还没夹逼完
+            //// 说明新数组在 patch 完旧的之后还有多，需要继续 insert
+            //// oldStartIdx <= oldEndIdx || newStartIdx <= newEndIdx && oldStartIdx > oldEndIdx 
+            //// 说明 newStartIdx <= newEndIdx && oldStartIdx > oldEndIdx
             if (oldStartIdx > oldEndIdx) {
                 before = newCh[newEndIdx + 1] == null ? null : newCh[newEndIdx + 1].elm;
                 addVnodes(parentElm, before, newCh, newStartIdx, newEndIdx, insertedVnodeQueue);
             }
+
+            //// oldStartIdx <= oldEndIdx || newStartIdx <= newEndIdx && oldStartIdx<= oldEndIdx 
             else {
+                //// 旧数组没夹逼完的
+                //// 新数组的元素就已经 patch 和 insert 了
+                //// 旧数组剩下的都是没用的了 需要移除
                 removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx);
             }
         }
@@ -288,19 +328,24 @@ export function init(modules, domApi) {
         const oldCh = oldVnode.children;
         const ch = vnode.children;
        
-        // vnode 都是 h 函数创建出来的，那么 vnode 的引用必然不一样，这种场景存在吗，除非只是单纯的 patch 两个相同的节点，这样确实可以
+        //// vnode 都是 h 函数创建出来的，那么 vnode 的引用必然不一样，这种场景存在吗，除非只是单纯的 patch 两个相同的节点，这样确实可以
         if (oldVnode === vnode)
             return;
         if (vnode.data !== undefined) {
             //// hooks
             for (let i = 0; i < cbs.update.length; ++i)
                 cbs.update[i](oldVnode, vnode);
+            //// 如果节点自身还有调用 update 的hooks 的话
+            //// vnode.data.hook.update.call(vnode.data.hook.update.call, old, new)
             (_d = (_c = vnode.data.hook) === null || _c === void 0 ? void 0 : _c.update) === null || _d === void 0 ? void 0 : _d.call(_c, oldVnode, vnode);
         }
 
+        //// 更新完 vnode 本身，再更新 vnode 的 children
         if (isUndef(vnode.text)) {
+            //// 只是更新了 children 元素的话
             if (isDef(oldCh) && isDef(ch)) {
                 if (oldCh !== ch)
+                //// 更新 chilren
                     updateChildren(elm, oldCh, ch, insertedVnodeQueue);
             }
             else if (isDef(ch)) {
@@ -337,9 +382,13 @@ export function init(modules, domApi) {
             oldVnode = emptyNodeAt(oldVnode);
         }
 
+        // 同一个 vnode 那么 patch 它
         if (sameVnode(oldVnode, vnode)) {
             patchVnode(oldVnode, vnode, insertedVnodeQueue);
         }
+        // 不然销毁重造
+        // react rule 1: 不同的 tag，就 recreate
+        // 移除 oldVnode,根据 newVnode 创建 elm,并添加至 parent中
         else {
             elm = oldVnode.elm;
             parent = api.parentNode(elm);

@@ -18,9 +18,15 @@ const container = document.getElementById("container");
 const newVnode = h("ul#container", {}, [
   h("li", { key: "a" }, "li a"),
   h("li", { key: "1" }, "li 1"),
-  h("li", { key: "2" }, "li 2"),
   h("li", { key: "3" }, "li 3"),
   h("li", { key: "b" }, "li b"),
+]);
+
+const newVnode2 = h("ul#container", {}, [
+  h("li", { key: "a" }, "li a"),
+  h("li", { key: "1" }, "li 1"),
+  h("li", { key: "2" }, "li 2"),
+  h("li", { key: "3" }, "li 3"),
 ]);
 
 const vnode = h(
