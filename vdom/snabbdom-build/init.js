@@ -210,7 +210,7 @@ export function init(modules, domApi) {
         // 两个数组长度不一样多的话，先 patch 完所有 vnode
         while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
 
-            //// TODO: 这四个 null 怎么回事
+            // 注意 undefined == null 为 true
             if (oldStartVnode == null) {
                 oldStartVnode = oldCh[++oldStartIdx]; // Vnode might have been moved left
             }
@@ -328,11 +328,11 @@ export function init(modules, domApi) {
         const oldCh = oldVnode.children;
         const ch = vnode.children;
        
-        //// vnode 都是 h 函数创建出来的，那么 vnode 的引用必然不一样，这种场景存在吗，除非只是单纯的 patch 两个相同的节点，这样确实可以
+        //// vnode 都是 h 函数创建出来的，那么 vnode 的引用必然不一样，不过也不妨碍你 patch 相同的节点
         if (oldVnode === vnode)
             return;
         if (vnode.data !== undefined) {
-            //// hooks
+            //// 调用各个模块实现的 update hooks 来 patch vnode 本身
             for (let i = 0; i < cbs.update.length; ++i)
                 cbs.update[i](oldVnode, vnode);
             //// 如果节点自身还有调用 update 的hooks 的话
@@ -382,13 +382,11 @@ export function init(modules, domApi) {
             oldVnode = emptyNodeAt(oldVnode);
         }
 
-        // 同一个 vnode 那么 patch 它
+        // 同一个 vnode 那么 patch 它同步到真实的 DOM 去
         if (sameVnode(oldVnode, vnode)) {
             patchVnode(oldVnode, vnode, insertedVnodeQueue);
         }
         // 不然销毁重造
-        // react rule 1: 不同的 tag，就 recreate
-        // 移除 oldVnode,根据 newVnode 创建 elm,并添加至 parent中
         else {
             elm = oldVnode.elm;
             parent = api.parentNode(elm);
