@@ -370,7 +370,6 @@ export function init(modules, domApi) {
     }
     return function patch(oldVnode, vnode) {
         debugger;
-        console.log('patch');
         let i, elm, parent;
         const insertedVnodeQueue = [];
         //// 每一个 module 的 prehooks-lifecycle
