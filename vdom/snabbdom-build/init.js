@@ -207,7 +207,7 @@ export function init(modules, domApi) {
         let elmToMove;
         let before;
 
-        // 两个数组长度不一样多的话，先 patch 完所有 vnode
+        // 其中一个数组 patch 完即可，loop 结束后再处理需要删除和添加的 vnode
         while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
 
             // 注意 undefined == null 为 true
@@ -225,9 +225,8 @@ export function init(modules, domApi) {
             }
             //// end
 
-            //// NOTE: 不用硬看，如果看不懂，问下自己，如果在头部插了个 node
-            //// 如果直接对比的话？ 所有的 node 都需要 patch
-            //// 但是如果可以提前发现 只是在头部插了个 node 的话，那么
+            //// NOTE: 不用硬看，如果看不懂，问下自己，"如果在头部插了个 node, 如果直接对比的话,你会怎么处理？“
+            //// 如果可以提前发现只是在头部插了个 node 的话，那么
             //// 你就可以只修改第一个 node，而保持其他 node 不变
             //// 没移动直接 patch 即可
             else if (sameVnode(oldStartVnode, newStartVnode)) {
@@ -240,7 +239,7 @@ export function init(modules, domApi) {
                 oldEndVnode = oldCh[--oldEndIdx];
                 newEndVnode = newCh[--newEndIdx];
             }
-            //// 位置移动了 需要 insert
+            //// 位置移动了 需要 patch and insert
             else if (sameVnode(oldStartVnode, newEndVnode)) {
                 // Vnode moved right
                 patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
@@ -257,8 +256,7 @@ export function init(modules, domApi) {
             }
             //// --- end
 
-            //// 如果都不是
-            //// 可以利用 key 来进行高效对比
+            //// 插入或者交换位置的我们可以利用 key 来进行高效对比
             else {
                 if (oldKeyToIdx === undefined) {
                     oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
@@ -268,8 +266,9 @@ export function init(modules, domApi) {
                     // New element
                     api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm);
                 }
-                //// 调换了位置
+                //// 调换了位置 销毁重建
                 //// 好说
+                //// 凡是涉嫌位置移动的 最后到需要 insert 因为 dom 没有移动的 api
                 else {
                     elmToMove = oldCh[idxInOld];
                     //// 调换的这两个 node tag 不相同 // 那么没办法复用
@@ -291,7 +290,7 @@ export function init(modules, domApi) {
         //// 新的 无 有 有 无
         //// oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx 不成立 才到这里 所以 有有的情况需要排除 无无的情况不用做什么
         ///// 夹逼完的说明都已经 patch 和 insert 了
-        //// 所以这里可以改写下我觉的
+        //// 所以这里可以改写下我觉得 不然不好理解
         // TODO: 提一个 pr 去 github 上
         // if(oldStartIdx <= oldEndIdx) {
         //     removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx);
@@ -345,7 +344,7 @@ export function init(modules, domApi) {
             //// 只是更新了 children 元素的话
             if (isDef(oldCh) && isDef(ch)) {
                 if (oldCh !== ch)
-                //// 更新 chilren
+                //// patch chilren
                     updateChildren(elm, oldCh, ch, insertedVnodeQueue);
             }
             else if (isDef(ch)) {
