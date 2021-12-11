@@ -1,3 +1,5 @@
+// Publisher/Subscriber
+// In the Observer/Observable pattern, the observers are aware of the observable. Whereas, in Publisher/Subscriber, publishers and subscribers don't need to know each other. They simply communicate with the help of message queues.
 function Emitter() {
   const map = {};
 
