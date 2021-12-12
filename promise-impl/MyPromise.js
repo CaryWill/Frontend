@@ -43,6 +43,7 @@ function MyPromise(executor) {
   }
 }
 
+// The promise resolution procedure is an abstract operation taking as input a promise and a value, which we denote as [[Resolve]](promise, x). If x is a thenable, it attempts to make promise adopt the state of x, under the assumption that x behaves at least somewhat like a promise. Otherwise, it fulfills promise with the value x.
 // 用来解析 x 是 promise 的情况，保证 `then` 执行顺序
 function resolvePromise(promise, x, resolve, reject) {
   if (promise === x) {
@@ -52,6 +53,7 @@ function resolvePromise(promise, x, resolve, reject) {
   }
 
   if (x instanceof MyPromise) {
+    // If x is a promise, adopt its state [3.4]
     x.then(
       (y) => resolvePromise(promise, y, resolve, reject),
       (r) => reject(r)
@@ -93,6 +95,7 @@ function resolvePromise(promise, x, resolve, reject) {
       resolve(x);
     }
   } else {
+    // 如果 x 不是 promise，直接 resolve
     resolve(x);
   }
 }
