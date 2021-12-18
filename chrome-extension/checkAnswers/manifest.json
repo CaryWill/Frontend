@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "Click It",
+  "description": "My first Chrome extension.",
+  "version": "1.0",
+  "author": "Emad Elmogy",
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "My custom google Extension"
+  },
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "storage",
+    "tabs",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": [
+        "popup.js"
+      ],
+      "match_about_blank": true,
+      "matches": [
+        "https://*/*"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}
