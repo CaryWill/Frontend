@@ -1,9 +1,8 @@
 document.addEventListener(
   "DOMContentLoaded",
   function () {
-    var answer = document.getElementById("input");
     document.getElementById("clickIt").addEventListener("click", () => {
-      var config = JSON.stringify(answer.value);
+      var config = JSON.stringify(document.getElementById("input").value);
       chrome.tabs.executeScript(
         {
           code: "var config = " + config,
