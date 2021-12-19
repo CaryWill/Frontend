@@ -3,7 +3,7 @@
   "name": "Click It",
   "description": "My first Chrome extension.",
   "version": "1.0",
-  "author": "Emad Elmogy",
+  "author": "cary",
   "browser_action": {
     "default_popup": "popup.html",
     "default_title": "My custom google Extension"
