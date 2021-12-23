@@ -1,0 +1,62 @@
+<!-- path -->
+<div id="out">
+  <div id="inner1">
+    <div id="inner2">inner2</div>
+  </div>
+</div>
+<!-- stopImmediatePropagation test -->
+<!-- <script>
+  document.body.addEventListener("click", () => {
+    console.log("body clicked");
+  });
+  const out = document.getElementById("out");
+  out.addEventListener("click", (e) => {
+    console.log("out click1", e, e.composedPath());
+    e.stopImmediatePropagation();
+  });
+  out.addEventListener("click", (e) => {
+    console.log("out click2", e, e.composedPath());
+  });
+  const inner2 = document.getElementById("inner2");
+  inner2.addEventListener("click", (e) => {
+    console.log("inner2", e, e.composedPath());
+  });
+</script> -->
+
+<!-- stopPropagation test -->
+<!-- <script>
+  document.body.addEventListener("click", () => {
+    console.log("body clicked");
+  });
+  const out = document.getElementById("out");
+  out.addEventListener("click", (e) => {
+    console.log("out click1", e, e.composedPath());
+    e.stopPropagation();
+  });
+  out.addEventListener("click", (e) => {
+    console.log("out click2", e, e.composedPath());
+  });
+  const inner2 = document.getElementById("inner2");
+  inner2.addEventListener("click", (e) => {
+    console.log("inner2", e, e.composedPath());
+  });
+</script> -->
+
+<!-- preventDefault test -->
+<script>
+  document.body.addEventListener("click", () => {
+    console.log("body clicked");
+  });
+  const out = document.getElementById("out");
+  out.addEventListener("click", (e) => {
+    console.log("out click1", e, e.composedPath());
+    e.preventDefault();
+  });
+  out.addEventListener("click", (e) => {
+    console.log("out click2", e, e.composedPath());
+  });
+  const inner2 = document.getElementById("inner2");
+  inner2.addEventListener("click", (e) => {
+    console.log("inner2", e, e.composedPath());
+  });
+</script>
