@@ -1,0 +1,28 @@
+<p id="p1" draggable="true">This element is draggable.</p>
+<p
+  id="target"
+  ondrop="drop_handler(event)"
+  ondragover="dragover_handler(event)"
+>
+  Drop Zone
+</p>
+
+<script>
+  function dragstart_handler(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+    console.log(ev.dataTransfer);
+  }
+
+  const element = document.getElementById("p1");
+  element.addEventListener("dragstart", dragstart_handler);
+
+  function dragover_handler(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move";
+  }
+  function drop_handler(ev) {
+//     ev.preventDefault();
+    const data = ev.dataTransfer.getData("text/plain");
+    ev.target.appendChild(document.getElementById(data));
+  }
+</script>
