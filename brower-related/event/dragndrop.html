@@ -1,28 +1,19 @@
 <p id="p1" draggable="true">This element is draggable.</p>
-<p
-  id="target"
-  ondrop="drop_handler(event)"
-  ondragover="dragover_handler(event)"
->
-  Drop Zone
-</p>
+<p id="target">Drop Zone</p>
 
 <script>
-  function dragstart_handler(ev) {
+  const source = document.getElementById("p1");
+  source.addEventListener("dragstart", function dragstart_handler(ev) {
+    // 数据存起来传输给 drop target
     ev.dataTransfer.setData("text/plain", ev.target.id);
-    console.log(ev.dataTransfer);
-  }
-
-  const element = document.getElementById("p1");
-  element.addEventListener("dragstart", dragstart_handler);
-
-  function dragover_handler(ev) {
+  });
+  const target = document.getElementById("target");
+  target.addEventListener("dragover", function dragover_handler(ev) {
     ev.preventDefault();
-    ev.dataTransfer.dropEffect = "move";
-  }
-  function drop_handler(ev) {
-//     ev.preventDefault();
+  });
+  target.addEventListener("drop", function drop_handler(ev) {
+    // 获取 source 传输过来的数据
     const data = ev.dataTransfer.getData("text/plain");
     ev.target.appendChild(document.getElementById(data));
-  }
+  });
 </script>
