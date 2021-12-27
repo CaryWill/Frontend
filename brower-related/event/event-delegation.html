@@ -1,0 +1,49 @@
+<style>
+  .tile {
+    height: 100px;
+    width: 25%;
+    float: left;
+  }
+</style>
+<div id="container">
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+  <div class="tile"></div>
+</div>
+<script>
+  function random(number) {
+    return Math.floor(Math.random() * number);
+  }
+
+  function bgChange() {
+    const rndCol = `rgb(${random(255)}, ${random(255)}, ${random(255)})`;
+    return rndCol;
+  }
+
+  const container = document.querySelector("#container");
+
+  // capture phase event delegation
+  // you can also use bubble phase event delegation
+  container.addEventListener(
+    "click",
+    (event) => ((event.target.style.backgroundColor = bgChange()), true)
+  );
+
+  document.addEventListener(
+    "click",
+    (event) => (console.log("document", event.composedPath()), true)
+  );
+</script>
