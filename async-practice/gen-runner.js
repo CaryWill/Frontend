@@ -2,17 +2,16 @@
 function* gen() {
   const v = yield Promise.resolve(1);
   const v2 = yield Promise.reject(v + 2);
-  const v3 = yield Promise.resolve(v2 + 2);
-  // console.log(v3);
+  yield Promise.resolve(v2 + 2);
 }
-// const it = gen();
-// it.next().value.then((value) => {
-//   it.next(value).value.then((value) => {
-//     it.next(value).value.then((value) => {
-//       console.log("v3", value);
-//     });
-//   });
-// });
+const it = gen();
+it.next().value.then((value) => {
+  it.next(value).value.then((value) => {
+    it.next(value).value.then((value) => {
+      console.log("v3", value);
+    });
+  });
+});
 // 正常来说我们想利用 generator，就是想管理异步流程
 // 所以 yield 后面的 expression 是异步的逻辑，比如 fetch data 返回一个 promise
 // 而这个 yield 返回的数据我们一般可能会在下个 yield 的 expression 里用到
