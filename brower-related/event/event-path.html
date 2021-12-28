@@ -4,6 +4,7 @@
     <div id="inner2">inner2</div>
   </div>
 </div>
+
 <!-- stopImmediatePropagation test -->
 <!-- <script>
   document.body.addEventListener("click", () => {
@@ -43,7 +44,7 @@
 </script> -->
 
 <!-- preventDefault test -->
-<script>
+<!-- <script>
   document.body.addEventListener("click", () => {
     console.log("body clicked");
   });
@@ -59,4 +60,26 @@
   inner2.addEventListener("click", (e) => {
     console.log("inner2", e, e.composedPath());
   });
-</script>
+</script> -->
+
+<!-- absolute element path test -->
+<!-- <div id="abs-out">absolute abs</div>
+<style>
+  #abs-out {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    top: 5px;
+    left: 0;
+  }
+</style> -->
+<!-- <script>
+  const out = document.getElementById("abs-out");
+  out.addEventListener("click", (e) => {
+    console.log("abs out click", e, e.composedPath());
+  });
+  const inner2 = document.getElementById("inner2");
+  inner2.addEventListener("click", (e) => {
+    console.log("inner2", e, e.composedPath());
+  });
+</script> -->
