@@ -22,6 +22,3 @@ class MovieLister {
     return allMovies.filter((m) => m.director === director);
   }
 }
-
-// 我们只依赖 interface 来实现组件可以和任何的文件进行工作（finder)，实现通过注入呢？
-// IoC
