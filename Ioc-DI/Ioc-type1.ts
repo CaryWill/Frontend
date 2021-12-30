@@ -1,3 +1,4 @@
+// Interface Injection(IoC type1)
 interface Movie {
   director: string;
 }
@@ -10,37 +11,32 @@ interface InjectFinder {
 }
 
 interface Injector {
+  // 具体往 target 里注入什么，需要注册器自己实现，毕竟一个类 conforms to 一个 interface 的话，一个 interface 也有很多的的方法，你是需要对这个类里所有的方法都注入呢还是怎么样，是吧
   inject(target: Object): void;
 }
 
-// TODO: 如何将一个 interface 作为入参传给别人做 instanceof 的校验，java 里可以用 someInterface.class 来将 interface pass around
+// FIXME: 如何将一个 interface 作为入参传给别人做 instanceof 的校验，java 里可以用 someInterface.class 来将 interface pass around
+// 暂时一个 interface 只能有一个 method 好了，然后保持同名，首字母大小写区分，这样判断一个类是否 conform to 这个 interface 看有没有同名的 method 即可
 interface InjectFinderFileName {
   injectFinderFileName(filename: string): void;
 }
 
-class DefaultFinder {
-  public findAll() {
-    return [];
-  }
-}
-
-// Interface Injection(IoC type1)
-// 我希望使用 finder 这个对象，所以我需要实现这个 InjectFinder 接口 等待别人注入 finder 对象
+// 我希望使用 finder 这个对象，所以我需要实现这个 InjectFinder 接口 等待被注入 finder 对象
 class MovieLister1 implements InjectFinder {
-  finder: MovieFinder = new DefaultFinder();
+  finder?: MovieFinder;
 
   public injectFinder(finder: MovieFinder) {
     this.finder = finder;
   }
 
   public moviesDirectedBy(director: string) {
+    if (!this.finder) return [];
     const allMovies = this.finder.findAll();
     return allMovies.filter((m) => m.director === director);
   }
 }
 
-// 这个是一个 finder 对象，我希望别人能将它注入到需要 finder 的组件里
-// 我希望别人能将配置文件注入进来 injectFileName，这样我就可以根据文件名来获取数据了，在别人调用 finder 身上的 findAll 的时候可以返回对应的数据
+// 既是要实现 InjectFinderFileName 的组件，同时又是实现了 inject 的注射器
 class ColonMovieFinder1 implements MovieFinder, InjectFinderFileName {
   fileName: string = "";
 
@@ -63,38 +59,44 @@ class FinderFilenameInjector implements Injector {
   }
 }
 
+const conformsTo = (interfaceName: string, instance: any) => {
+  const method = interfaceName.charAt(0).toLowerCase() + interfaceName.slice(1);
+  // 如果有和 interface 同名的 method，那么就表示这个 instance conforms to 这个 interface
+  return instance[method];
+};
 class Container {
   components: any = {};
   injectors: any = {};
 
-  public registerComponent(componentName: string, Component: any) {
+  public registerComponent(
+    componentName: string,
+    Component: any,
+    ...props: any // 这里修改了下
+  ) {
     // 这里模式是 组件名 - 组件
-    this.components[componentName] = new Component();
+    this.components[componentName] = new Component(...props);
   }
 
   /**
    * interfaceName: 组件 conforms to 的 interface
-   * injector: 注射器 顾名思义 就是负责往组件里面注入依赖的东西，所以它需要有一个 inject 方法，该方法接受一个组件
+   * injector: 注射器 顾名思义 就是负责往组件里面注入依赖的东西，所以它需要有一个 inject 方法，该方法接受一个组件,具体怎么注入得在 inject 方法里面实现
    */
   public registerInjector(interfaceName: string, injector: any) {
     // 这里的模式是 注入接口 - 注入器
-    // 容器会遍历所有的组件，如果组件实现了注入接口，将调用对应的注入器，将这个组件作为参数，传递给注入器(就比如 ColonMovieFinder1 组件实例就是一个注入器，因为它可以将它的 finder 实例注入给 MovieLister1 实例，这样我们就能调用它身上的 finder.findAll 方法获取所有电影了)
-    const fnName =
-      interfaceName.charAt(0).toLowerCase() + interfaceName.slice(1);
-    this.injectors[fnName] = injector;
+    // 容器会遍历所有的组件，如果组件实现了注入接口，将调用对应的注入器，将这个组件作为参数，传递给注入器(就比如 ColonMovieFinder1 组件实例是一个注入器，因为它可以将它的 finder 实例注入给 MovieLister1 实例，这样我们就能调用它身上的 finder.findAll 方法获取所有电影了)
+    this.injectors[interfaceName] = injector;
   }
 
   // 开始依赖注入
   public start() {
-    // FIXME: for in own property ?
+    // NOTE: hasOwnProperty(for 简洁性就暂时不做这个校验了)
     for (const component in this.components) {
       const instance = this.components[component];
-      for (const inject in this.injectors) {
-        // 如果实例实现了这个接口的话 那么开始注入
-        if (instance[inject]) {
-          // 实现了接口的组件 必须实现 inject 接口
-          // TODO: 但是感觉虽然也没有必要
-          this.injectors[inject].inject(instance);
+      for (const interfaceName in this.injectors) {
+        // 如果实例实现了这个接口(interface)的话 那么开始注入
+        if (conformsTo(interfaceName, instance)) {
+          // 实现了接口的组件 必须实现 inject 接口 以便做具体的注入
+          this.injectors[interfaceName].inject(instance);
         }
       }
     }
@@ -106,16 +108,16 @@ class Container {
 }
 
 class Tester {
-  private container: any;
+  public container: any;
 
-  private registerComponents() {
+  public registerComponents() {
     // 这两个组件都需要根据 interface 来注入实现
     this.container.registerComponent("MovieLister", MovieLister1);
     this.container.registerComponent("MovieFinder", ColonMovieFinder1);
     this.container.start();
   }
 
-  private registerInjectors() {
+  public registerInjectors() {
     this.container.registerInjector(
       "InjectFinder",
       this.container.lookup("MovieFinder")
@@ -126,25 +128,24 @@ class Tester {
     );
   }
 
-  private configureContainer() {
+  public configureContainer() {
     this.container = new Container();
     this.registerComponents();
     this.registerInjectors();
     this.container.start();
   }
-
-  public testIface() {
-    this.configureContainer();
-    const movieLister1 = this.container.lookup("MovieLister");
-    const movies1 = movieLister1.moviesDirectedBy("cary");
-    console.log(movies1);
-  }
 }
 
 // main
 const tester = new Tester();
-tester.testIface();
+tester.configureContainer();
+const movieLister1 = tester.container.lookup("MovieLister");
+const movies1 = movieLister1.moviesDirectedBy("cary");
+console.log(movies1);
 
 // https://martinfowler.com/articles/injection.html
 // https://www.cnblogs.com/afarmer/p/4259133.html
 // https://insights.thoughtworks.cn/injection/
+
+// 对于不懂的东西一定要仔细看，像 .class 这个东西看不懂应该去查下或者问下才对，白天发现看不懂就是因为这个
+// 晚上问了雷雷发现原来是这样的
