@@ -15,7 +15,7 @@ class MovieLister3 {
   constructor(finder: MovieFinder) {
     this.finder = finder;
   }
-  moviesDirectedBy(director: String) {
+  moviesDirectedBy(director: string) {
     const allMovies = this.finder.findAll();
     return allMovies.filter((m) => m.director === director);
   }
@@ -23,7 +23,7 @@ class MovieLister3 {
 
 class ColonMovieFinder3 implements MovieFinder {
   fileName;
-  constructor(fileName: String) {
+  constructor(fileName: string) {
     this.fileName = fileName;
   }
   findAll() {
