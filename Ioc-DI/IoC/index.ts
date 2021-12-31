@@ -1,3 +1,4 @@
+// No DI
 interface Movie {
   director: string;
 }
