@@ -11,15 +11,24 @@ class ColonDelimitedMovieFinder {
   constructor(name: String) {
     this.fileName = name;
   }
-  findAll: () => [{ director: "cary" }];
+
+  findAll() {
+    // read file data by fileName
+    console.log(`from: ${this.fileName}} file`);
+    return [{ director: "cary" }];
+  }
 }
 
-// TODO: 什么是耦合关系 是互相依赖吗
 class MovieLister {
-  private finder: MovieFinder;
+  private finder?: MovieFinder;
   public moviesDirectedBy(director: String) {
     this.finder = new ColonDelimitedMovieFinder("movies1.txt");
     const allMovies = this.finder.findAll();
     return allMovies.filter((m) => m.director === director);
   }
 }
+
+// main
+const lister = new MovieLister();
+const movies = lister.moviesDirectedBy("cary");
+console.log(movies);
