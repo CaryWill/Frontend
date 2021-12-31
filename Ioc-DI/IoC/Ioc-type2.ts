@@ -1,12 +1,11 @@
+// IoC
+// Setter Injection(IoC type2)
 interface Movie {
   director: string;
 }
 interface MovieFinder {
   findAll(): Array<Movie>;
 }
-
-// IoC
-// Setter Injection(IoC type2)
 class MovieLister2 {
   _finder: any;
 
@@ -41,15 +40,14 @@ class ColonMovieFinder2 implements MovieFinder {
 }
 
 class FileSystemXmlApplicationContext {
-  config: any;
+  config: Object;
 
-  constructor(config: any) {
+  constructor(config: Object) {
     this.config = config;
   }
 
   getBean(id: string) {
     const { class: Class, property } = this.config[id];
-    // FIXME: replace eval function
     const instance = eval(`new ${Class}()`);
 
     // calling setter on instance (setter injection)
@@ -67,7 +65,7 @@ class FileSystemXmlApplicationContext {
   }
 }
 
-// TODO: move config to separate file
+// can be replaced by XML file or other things
 const config = {
   MovieLister2: {
     class: "MovieLister2",
@@ -90,4 +88,5 @@ try {
   const movies2 = movieLister2.moviesDirectedBy("cary");
   console.log(movies2);
 } catch (error) {}
+
 // https://martinfowler.com/articles/injection.html

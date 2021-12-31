@@ -25,7 +25,7 @@ class ServiceLocator1 {
   }
 }
 
-class MovieLister1 {
+class MovieLister4 {
   finder?: MovieFinder;
 
   public moviesDirectedBy(director: string) {
@@ -36,7 +36,7 @@ class MovieLister1 {
   }
 }
 
-class ColonMovieFinder1 implements MovieFinder {
+class ColonMovieFinder4 implements MovieFinder {
   fileName: string = "";
 
   public constructor(fileName: string) {
@@ -53,13 +53,13 @@ class Tester1 {
     const locator = new ServiceLocator1();
     // you just need to replace "MovieFinder" to other services to do your own thing
     // without changing the MovieLister class
-    locator.loadService("MovieFinder", new ColonMovieFinder1("movies1.txt"));
+    locator.loadService("MovieFinder", new ColonMovieFinder4("movies1.txt"));
     ServiceLocator1.load(locator);
   }
 
   public testSimple() {
     this.configure();
-    const lister = new MovieLister1();
+    const lister = new MovieLister4();
     const movies = lister.moviesDirectedBy("cary");
     console.log(movies);
   }

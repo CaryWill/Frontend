@@ -37,7 +37,7 @@ class MovieLister1 implements InjectFinder {
 }
 
 // 既是要实现 InjectFinderFileName 的组件，同时又是实现了 inject 的注射器
-class ColonMovieFinder1 implements MovieFinder, InjectFinderFileName {
+class ColonMovieFinder1 implements MovieFinder, InjectFinderFileName, Injector {
   fileName: string = "";
 
   public injectFinderFileName(fileName: string) {
@@ -89,7 +89,7 @@ class Container {
 
   // 开始依赖注入
   public start() {
-    // NOTE: hasOwnProperty(for 简洁性就暂时不做这个校验了)
+    // no hasOwnProperty check for simplicyty
     for (const component in this.components) {
       const instance = this.components[component];
       for (const interfaceName in this.injectors) {
@@ -112,8 +112,8 @@ class Tester {
 
   public registerComponents() {
     // 这两个组件都需要根据 interface 来注入实现
-    this.container.registerComponent("MovieLister", MovieLister1);
-    this.container.registerComponent("MovieFinder", ColonMovieFinder1);
+    this.container.registerComponent("MovieLister", MovieLister4);
+    this.container.registerComponent("MovieFinder", ColonMovieFinder4);
     this.container.start();
   }
 
@@ -147,5 +147,6 @@ console.log(movies1);
 // https://www.cnblogs.com/afarmer/p/4259133.html
 // https://insights.thoughtworks.cn/injection/
 
-// 对于不懂的东西一定要仔细看，像 .class 这个东西看不懂应该去查下或者问下才对，白天发现看不懂就是因为这个
+// 对于不懂的部分一定要仔细反复看
+// 像 .class 这个东西看不懂应该去查下或者问下才对，白天发现看不懂就是因为这个
 // 晚上问了雷雷发现原来是这样的
