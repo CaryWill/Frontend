@@ -26,15 +26,10 @@ class ServiceLocator1 {
 }
 
 class MovieLister1 {
-  serviceName: string = "";
   finder?: MovieFinder;
 
-  constructor(serviceName: string) {
-    this.serviceName = serviceName;
-  }
-
   public moviesDirectedBy(director: string) {
-    this.finder = ServiceLocator1.getService(this.serviceName);
+    this.finder = ServiceLocator1.getService("MovieFinder");
     if (!this.finder) return [];
     const allMovies = this.finder.findAll();
     return allMovies.filter((m) => m.director === director);
@@ -56,13 +51,15 @@ class ColonMovieFinder1 implements MovieFinder {
 class Tester1 {
   private configure() {
     const locator = new ServiceLocator1();
+    // you just need to replace "MovieFinder" to other services to do your own thing
+    // without changing the MovieLister class
     locator.loadService("MovieFinder", new ColonMovieFinder1("movies1.txt"));
     ServiceLocator1.load(locator);
   }
 
   public testSimple() {
     this.configure();
-    const lister = new MovieLister1("MovieFinder");
+    const lister = new MovieLister1();
     const movies = lister.moviesDirectedBy("cary");
     console.log(movies);
   }
