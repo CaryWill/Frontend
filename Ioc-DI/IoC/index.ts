@@ -1,3 +1,4 @@
+// No DI
 interface Movie {
   director: string;
 }
@@ -10,12 +11,16 @@ class ColonDelimitedMovieFinder {
   constructor(name: String) {
     this.fileName = name;
   }
-  findAll: () => [{ director: "cary" }];
+
+  findAll() {
+    // read file data by fileName
+    console.log(`from: ${this.fileName}} file`);
+    return [{ director: "cary" }];
+  }
 }
 
-// TODO: 什么是耦合关系 是互相依赖吗
 class MovieLister {
-  private finder: MovieFinder;
+  private finder?: MovieFinder;
   public moviesDirectedBy(director: String) {
     this.finder = new ColonDelimitedMovieFinder("movies1.txt");
     const allMovies = this.finder.findAll();
@@ -23,5 +28,7 @@ class MovieLister {
   }
 }
 
-// 我们只依赖 interface 来实现组件可以和任何的文件进行工作（finder)，实现通过注入呢？
-// IoC
+// main
+const lister = new MovieLister();
+const movies = lister.moviesDirectedBy("cary");
+console.log(movies);
