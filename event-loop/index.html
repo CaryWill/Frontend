@@ -1,0 +1,16 @@
+<div class="controls">
+  <button id="button">send xml http request</button>
+</div>
+<script>
+  document.getElementById('button').addEventListener('click', () => {
+    const xhr = new XMLHttpRequest(),
+      method = "GET",
+      url = "https://developer.mozilla.org/";
+
+    xhr.open(method, url, true);
+    xhr.send();
+    xhr.addEventListener('readystatechange', res => {
+      console.log('res', res)
+    })
+  })
+</script>
