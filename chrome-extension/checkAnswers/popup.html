@@ -2,25 +2,30 @@
 <!-- https://stackoverflow.com/questions/17567624/pass-a-parameter-to-a-content-script-injected-using-chrome-tabs-executescript -->
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Click It</title>
-    <meta charset="UTF-8" />
-  </head>
-  <style>
-    #clickIt {
-      margin-top: 10px;
-      font-size: 12px;
-      float: right;
-      margin-bottom: 10px;
-    }
 
-    input {
-      min-width: 200px;
-    }
-  </style>
-  <body>
-    <input id="input" placeholder="请输入答案" />
-    <button id="clickIt">自动填充</button>
-  </body>
-  <script src="popup.js"></script>
+<head>
+  <title>Click It</title>
+  <meta charset="UTF-8" />
+</head>
+<style>
+  #clickIt,
+  #clickIt {
+    margin-top: 10px;
+    font-size: 12px;
+    float: right;
+    margin-bottom: 10px;
+  }
+
+  input {
+    min-width: 200px;
+  }
+</style>
+
+<body>
+  <input id="input" placeholder="请输入答案" />
+  <button id="clickIt">自动填充</button>
+  <button id="revise">自动修正</button>
+</body>
+<script src="popup.js"></script>
+
 </html>
