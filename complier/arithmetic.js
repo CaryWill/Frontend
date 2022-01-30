@@ -37,13 +37,13 @@ function tokenizer(input) {
         }
 
         if (char === "(") {
-            tokens.push({ type: 'paren', value: "(" })
+            tokens.push({ type: 'operator', value: "(" })
             current++;
             continue;
         }
 
         if (char === ")") {
-            tokens.push({ type: "paren", value: ")" })
+            tokens.push({ type: "operator", value: ")" })
             current++;
             continue;
         }
@@ -61,6 +61,7 @@ function tokenizer(input) {
 // https://en.wikipedia.org/wiki/Shunting-yard_algorithm 英文版
 // https://en.wikipedia.org/wiki/Reverse_Polish_notation RPN
 const hasHigherPriority = (operator, target) => {
+    if (target === '(') return true;
     if (operator === '*' || operator === '/') {
         if (target === '+' || target === '-') {
             return true;
@@ -133,32 +134,32 @@ function parser(tokens) {
     // and make it the parent of the 2 popped items. 
     // Then you push the node back on the stack.
 
-    const stack = [];
-    while (outputQueue.length > 0) {
-        const token = outputQueue.shift();
-        const NUMBERS = /[0-9]/;
-        const ARITHMETI_COPERATOR = /[+*\/-]/;
-        if (NUMBERS.test(token)) {
-            stack.push(token);
-        } else if (ARITHMETI_COPERATOR.test(token)) {
-            const right = stack.pop();
-            const left = stack.pop();
-            stack.push({
-                type: 'BinaryExpression',
-                operator: token,
-                left: NUMBERS.test(left) ? {
-                    type: 'Literal',
-                    value: left
-                } : left,
-                right: NUMBERS.test(right) ? {
-                    type: 'Literal',
-                    value: right
-                } : right,
-            });
-        }
-    }
+    // const stack = [];
+    // while (outputQueue.length > 0) {
+    //     const token = outputQueue.shift();
+    //     const NUMBERS = /[0-9]/;
+    //     const ARITHMETI_COPERATOR = /[+*\/-]/;
+    //     if (NUMBERS.test(token)) {
+    //         stack.push(token);
+    //     } else if (ARITHMETI_COPERATOR.test(token)) {
+    //         const right = stack.pop();
+    //         const left = stack.pop();
+    //         stack.push({
+    //             type: 'BinaryExpression',
+    //             operator: token,
+    //             left: NUMBERS.test(left) ? {
+    //                 type: 'Literal',
+    //                 value: left
+    //             } : left,
+    //             right: NUMBERS.test(right) ? {
+    //                 type: 'Literal',
+    //                 value: right
+    //             } : right,
+    //         });
+    //     }
+    // }
     console.log(JSON.stringify(outputQueue));
 }
 
 // parser(tokenizer('1+2*3+4/5*1')); // RPN: 123*+45/1*+ 
-parser(tokenizer('1+2+3*4*5*6')); 
+parser(tokenizer('1+(2+3)*4*5*6')); 
