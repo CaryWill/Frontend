@@ -171,7 +171,58 @@ function parser(tokens) {
 // parser(tokenizer('1+(2+3)*4*5*6')); 
 // console.log(JSON.stringify(parser(tokenizer('1+(2+3)*4*5*6'))));
 
-// TODO: no-op transformer
+function noopTransformer(ast) {
+
+  // depth-first traversal
+  function traverser(ast, visitor) {
+    function traverseNode(node, parent) {
+      let { enter, exit } = visitor[node.type] || {};
+      if (enter) enter(node, parent);
+      switch (node.type) {
+        case 'Program':
+          node.body.forEach(child => {
+            traverseNode(child, node.body);
+          })
+          break;
+        case 'BinaryExpression':
+          traverseNode(node.left, node);
+          traverseNode(node.right, node);
+          break;
+        case 'Literal':
+          break;
+        default:
+          throw new TypeError(node.type);
+      }
+      if (exit) exit(node, parent);
+    }
+    traverseNode(ast, null);
+  }
+
+  let newAst = {
+    type: 'Program',
+    body: [],
+  };
+
+  traverser(ast, {
+    BinaryExpression: {
+      enter(node, parent) {
+        newAst.body.push(node);
+        console.log('enter:', node.operator);
+      },
+      exit(node, parent) {
+        console.log('exit', node.operator);
+      }
+    },
+    Literal: {
+      enter(node, parent) {
+        newAst.body.push(node);
+        console.log('enter:', node.value);
+      },
+    }
+  });
+}
+
+// console.log(noopTransformer(parser(tokenizer('1+2*3'))));
 
 function codeGenerator(node) {
   switch (node.type) {
@@ -187,5 +238,5 @@ function codeGenerator(node) {
   }
 }
 
-console.log(codeGenerator(parser(tokenizer('(1+2)*(3+1)'))));
+// console.log(codeGenerator(parser(tokenizer('(1+2)*(3+1)'))));
 // console.log(JSON.stringify(parser(tokenizer('(1+2)*3'))))
