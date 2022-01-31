@@ -134,32 +134,39 @@ function parser(tokens) {
     // and make it the parent of the 2 popped items. 
     // Then you push the node back on the stack.
 
-    // const stack = [];
-    // while (outputQueue.length > 0) {
-    //     const token = outputQueue.shift();
-    //     const NUMBERS = /[0-9]/;
-    //     const ARITHMETI_COPERATOR = /[+*\/-]/;
-    //     if (NUMBERS.test(token)) {
-    //         stack.push(token);
-    //     } else if (ARITHMETI_COPERATOR.test(token)) {
-    //         const right = stack.pop();
-    //         const left = stack.pop();
-    //         stack.push({
-    //             type: 'BinaryExpression',
-    //             operator: token,
-    //             left: NUMBERS.test(left) ? {
-    //                 type: 'Literal',
-    //                 value: left
-    //             } : left,
-    //             right: NUMBERS.test(right) ? {
-    //                 type: 'Literal',
-    //                 value: right
-    //             } : right,
-    //         });
-    //     }
-    // }
-    console.log(JSON.stringify(outputQueue));
+    const stack = [];
+    while (outputQueue.length > 0) {
+        const token = outputQueue.shift();
+        const NUMBERS = /[0-9]/;
+        const ARITHMETI_COPERATOR = /[+*\/-]/;
+        if (NUMBERS.test(token)) {
+            stack.push(token);
+        } else if (ARITHMETI_COPERATOR.test(token)) {
+            const right = stack.pop();
+            const left = stack.pop();
+            stack.push({
+                type: 'BinaryExpression',
+                operator: token,
+                left: NUMBERS.test(left) ? {
+                    type: 'Literal',
+                    value: left
+                } : left,
+                right: NUMBERS.test(right) ? {
+                    type: 'Literal',
+                    value: right
+                } : right,
+            });
+        }
+    }
+
+    let ast = {
+        type: 'Program',
+        body: [stack[0]],
+    };
+
+    return ast;
 }
 
 // parser(tokenizer('1+2*3+4/5*1')); // RPN: 123*+45/1*+ 
-parser(tokenizer('1+(2+3)*4*5*6')); 
+// parser(tokenizer('1+(2+3)*4*5*6')); 
+// console.log(JSON.stringify(parser(tokenizer('1+(2+3)*4*5*6'))));
