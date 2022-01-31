@@ -1,8 +1,5 @@
-// "1+2/3" === 1+2/3
-// "(1+2)/3" === (1+2) / 3
-
 function tokenizer(input) {
-  // 将 input 分离成组成四则运算语法的最基本的单元
+  // 将 input 分离成组成语法的基本单元
   let current = 0;
   let tokens = [];
   while (current < input.length) {
@@ -28,7 +25,6 @@ function tokenizer(input) {
     }
 
     // 四则运算符
-    // TODO: 确认下
     const ARITHMETI_COPERATOR = /[+*\/-]/;
     if (ARITHMETI_COPERATOR.test(char)) {
       tokens.push({ type: "operator", value: char })
@@ -124,7 +120,7 @@ function parser(tokens) {
     outputQueue.push(operator);
   }
 
-  // Now: outputQueue.join('') is RPN
+  // Now outputQueue.join('') is RPN
 
   // Convert To Binary Tree // AST
   // https://stackoverflow.com/a/12381550/10190407
