@@ -51,6 +51,15 @@ function tokenizer(input) {
 }
 
 // console.log(tokenizer("(1+2)/3"));
+// [
+//   { type: 'operator', value: '(' },
+//   { type: 'number', value: '1' },
+//   { type: 'operator', value: '+' },
+//   { type: 'number', value: '2' },
+//   { type: 'operator', value: ')' },
+//   { type: 'operator', value: '/' },
+//   { type: 'number', value: '3' }
+// ]
 
 // https://stackoverflow.com/a/12381550/10190407 一开始看到这个
 // https://zh.wikipedia.org/zh-tw/调度场算法 这个比英文版详细
