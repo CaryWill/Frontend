@@ -96,22 +96,22 @@ function parser(tokens) {
         // NOTE: 这里只考虑四则运算，而四则运算运算符都是左结合
 
         if (token.value === '(') {
-          // 如果這個記號是一個左括號，那麼就將其壓入棧當中
+          // 如果这个 token 是一个做括号，那么将它 push 到 operatorStack 中 
           operatorStack.push(token.value);
         } else if (token.value === ')') {
-          // 如果這個記號是一個右括號，那麼：
-          // 從棧當中不斷地彈出運算子並且放入輸出佇列中，直到棧頂部的元素為左括號為止。
-          // 將左括號從棧的頂端彈出，但並不放入輸出佇列中去。
+          // 如果这个 token 是一个右括号，那么：
+          // 从 operatorStack 中不断 pop 运算符并且 push 到 outputQueue 队列中，知道 operatorStack 顶部的运算符尾左括号为止。
+          // 将左括号从 operatorStack 的顶端 pop 出去，但并不放入到 outputQueue 队列中去。
           while (operatorStack[operatorStack.length - 1] !== '(') {
             const operator = operatorStack.pop();
             outputQueue.push(operator);
           }
           operatorStack.pop();
         } else {
-          // 只要存在另一個記為o2的運算子位於棧的頂端，並且
-          // 如果o1是左結合性的並且它的運算子優先級要小於或者等於o2的優先級
-          // 那麼將o2從棧的頂端彈出並且放入輸出佇列中（迴圈直至以上條件不滿足為止）
-          // 然後，將o1壓入棧的頂端
+          // 只要存在另一个记为 o2 的运算符位于 operatorStack 栈的顶端，并且
+          // 如果 token 是左结合性的并且它的运算符的优先级要小于或者等于 o2 的优先级
+          // 那么将 o2 从 operatorStack 栈的顶端 pop 出来并且放入到 outputQueue 队列中（loop 直至以上的条件不满足为止）
+          // 然后将 token push 到 operatorStack 去
           while (!hasHigherPriority(token.value, operatorStack[operatorStack.length - 1]) && operatorStack.length > 0) {
             const operator = operatorStack.pop();
             outputQueue.push(operator);
@@ -123,7 +123,7 @@ function parser(tokens) {
     current++;
   }
 
-  // 當再沒有記號可以讀取時：將運算子逐個彈出並放入輸出佇列中。
+  // 当没有 token 可以读取时: 将 operatorStack 里的运算符逐个 pop 并 push 到 outputQueue 队列中
   while (operatorStack.length > 0) {
     const operator = operatorStack.pop();
     outputQueue.push(operator);
