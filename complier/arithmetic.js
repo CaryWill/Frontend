@@ -220,14 +220,16 @@ function noopTransformer(ast) {
     },
     Literal: {
       enter(node, parent) {
-        newAst.body.push(node);
         console.log('enter:', node.value);
       },
     }
   });
+
+  return ast;
 }
 
-// console.log(noopTransformer(parser(tokenizer('1+2*3'))));
+// console.log(JSON.stringify(noopTransformer(parser(tokenizer('1+2*3+1/2')))));
+// console.log(JSON.stringify(parser(tokenizer('1+2*3+1/2'))));
 
 function codeGenerator(node) {
   switch (node.type) {
