@@ -5,28 +5,52 @@
 //     children: [
 //       {
 //         type: 'h1',
-//         props: {} 
+//         props: {}
 //       },
 //       {
 //         type: 'h2',
-//         props: {} 
+//         props: {}
 //       }
 //     ]
 //   }
 // }
-// function render(vnode, container) {
-//   const {type, props: {children, nodeValue = '', ...rest}} = vnode;
-//   let node; // dom node
-//   if (type === 'TEXT_ELEMENT') {
-//     node = document.createTextNode(nodeValue);
-//   } else {
-//     node = document.createElement(type);
-//     children?.forEach((child) => {
-//       render(child, node);
-//     })
-//   }
-//   container.appendChild(node);
-// };
-const vnode = /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", null, "h1"), /*#__PURE__*/React.createElement("h2", null, "h2"));
-const container = document.getElementById('root');
+function createElement(vnode) {
+  const {
+    type,
+    props: {
+      children,
+      nodeValue = "",
+      ...rest
+    }
+  } = vnode;
+
+  if (type === "TEXT_ELEMENT") {
+    node = document.createTextNode(nodeValue);
+  } else {
+    node = document.createElement(type);
+  }
+
+  return node;
+}
+
+function render(vnode, container) {
+  const {
+    props: {
+      children
+    }
+  } = vnode;
+  let node = createElement(vnode);
+  children?.forEach(child => {
+    render(child, node);
+  });
+  container.appendChild(node);
+}
+
+const Didact = {
+  createElement
+};
+/** @jsx Didact.createElement */
+
+const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"));
+const container = document.getElementById("root");
 render(element, container);
