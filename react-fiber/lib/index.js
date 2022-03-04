@@ -18,37 +18,47 @@ function createElement(type, props, ...children) {
   return {
     type,
     props: { ...props,
-      children: children.map(fiber => typeof fiber === "string" ? {
+      children: children.map(fiber => typeof fiber === "object" ? fiber : {
         type: "TEXT_ELEMENT",
         props: {
           nodeValue: fiber
         }
-      } : fiber)
+      })
     }
   };
 }
 
 function createDom(fiber) {
   const {
-    type,
-    props: {
-      children = [],
-      ...props
-    }
-  } = fiber; // create corresponding node
+    type
+  } = fiber;
+  const props = fiber.props || {};
+  const {
+    children,
+    nodeValue = ""
+  } = props || {}; // create corresponding node
 
   let node;
-  console.log(fiber);
 
   if (type === "TEXT_ELEMENT") {
     node = document.createTextNode("");
   } else {
     node = document.createElement(type);
-    children.forEach(vnode => node.appendChild(createDom(vnode)));
+    children?.forEach(vnode => node.appendChild(createDom(vnode)));
   } // add attributes to node
 
 
-  Object.keys(props).forEach(attr => node[attr] = props[attr]);
+  const isProperty = attr => attr !== "children";
+
+  Object.keys(props).filter(isProperty).forEach(attr => node[attr] = props[attr]); // set listener
+
+  const isListener = attr => attr.startsWith("on");
+
+  Object.keys(props).filter(isListener).forEach(listener => {
+    const type = listener.toLowerCase().slice(2);
+    node.removeEventListener(type, props[listener]);
+    node.addEventListener(type, props[listener]);
+  });
   return node;
 }
 
@@ -61,9 +71,19 @@ const Didact = {
   createElement
 };
 /** @jsx Didact.createElement */
-// 转换成 fiber 就是这样的
+// jsx 转换后就是这样，我们要根据 `createElement` 的入参来构建 fiber(vnode)
 // const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"));
 
-const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"));
 const container = document.getElementById("root");
+let props = {
+  count: 0
+};
+const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"), Didact.createElement("div", null, props.count), Didact.createElement("button", {
+  onClick: () => {
+    console.log(vnode);
+    props.count += 1; // TODO: 发现更新无效
+
+    render(vnode, container);
+  }
+}, "click"));
 render(vnode, container);
