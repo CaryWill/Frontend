@@ -1,3 +1,8 @@
+// 最基础的 react 版本
+// 渲染和更新
+// 缺点：
+// 1. 更新的时候需要重新自己生成一个完整的 vnode 用来渲染
+// 2. 更新的时候是全替的，重新生成一个完整的 dom 是是否影响性能的
 // vnode 结构如下，在 react 里 vnode 被称为 fiber，
 // {
 //   type: 'div',
@@ -61,20 +66,16 @@ function createDom(fiber) {
   return node;
 }
 
-let currentFiber = null;
-
 function render(fiber, container) {
   const node = createDom(fiber);
 
-  if (currentFiber) {
+  if (container.lastChild) {
     // 因为我们一开始使用的是 appendChild 所以我们只需要使用 `lastChild`
     // 就可以获得容器里的所有内容了
     container.replaceChild(node, container.lastChild);
   } else {
     container.appendChild(node);
   }
-
-  currentFiber = fiber;
 }
 
 const Didact = {
@@ -82,15 +83,11 @@ const Didact = {
 };
 /** @jsx Didact.createElement */
 // jsx 转换后就是这样，我们要根据 `createElement` 的入参来构建 fiber(vnode)
-// const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"));
 
 const container = document.getElementById("root");
-let props = {
-  count: 0
-};
-const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"), Didact.createElement("button", {
+const vnode = Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"), Didact.createElement("div", null, new Date()), Didact.createElement("button", {
   onClick: () => {
-    render(Didact.createElement("div", null, "new"), container);
+    render(vnode, container);
   }
 }, "click"));
 render(vnode, container);
