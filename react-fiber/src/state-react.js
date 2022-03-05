@@ -113,14 +113,22 @@ class App extends Didact.Component {
             this.setState({ time: new Date().toString() });
             // 我们需要调用 root vnode 对应的实例身上的 render 函数
             // 来获取最新的 vnode，然后才可以将其更新到 dom 上
-            // 这里暂时通过 parent 组件传下来的 props 来更新 dom
-            this.props.update();
+            // 那么具体怎么更新呢？ 我们拿不到整个 vnode tree，只能拿到
+            // 当前 vnode 实例返回的 vnode
+            // 1. 通过 props 将需要的东西传下来（实例也好，实例返回的 vnode 也好，都是对 dom 进行全量更新
+            // 2. 拿到当前 vnode 对应的 dom，然后进行 patch 更新
+
+            // 显然在当前的实现下，是拿不到 vnode 对应的 dom 的，因为 vnode 只有 type 和 props 两个属性
+            // 这里暂时通过第一种方式进行 patch
             // 不过，这样的话，虽然组件有了状态，但是，每次更新到 dom 上
             // 我们需要重新创建所有的 dom 节点，这样性能是十分差的
             // FIXME: 如果当前组件状态变了，我们能获取当前组件的所对应的
             // dom 的 parent node 来调用当前组件 `this.render()` 来
             // 只更新当前组件的 dom，这样性能就会提升不少，这也就是下面会介绍的
             // reconcilation 来只更新当前组件的 dom
+            // 我们会将 vnode 包一层，这样我们可以拿到每一个 vnode 对应的 dom 节点
+            // 进行 patch 更新
+            this.props.update();
           }}
         >
           click
