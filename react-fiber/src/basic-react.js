@@ -72,17 +72,15 @@ function createDom(fiber) {
   return node;
 }
 
-let currentFiber = null;
 function render(fiber, container) {
   const node = createDom(fiber);
-  if (currentFiber) {
+  if (container.lastChild) {
     // 因为我们一开始使用的是 appendChild 所以我们只需要使用 `lastChild`
     // 就可以获得容器里的所有内容了
     container.replaceChild(node, container.lastChild);
   } else {
     container.appendChild(node);
   }
-  currentFiber = fiber;
 }
 const Didact = {
   createElement,
