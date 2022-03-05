@@ -1,3 +1,8 @@
+// 最基础的 react 版本
+// 渲染和更新
+// 缺点：
+// 1. 更新的时候需要重新自己生成一个完整的 vnode 用来渲染
+
 // vnode 结构如下，在 react 里 vnode 被称为 fiber，
 // {
 //   type: 'div',
