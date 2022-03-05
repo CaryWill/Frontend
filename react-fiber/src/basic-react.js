@@ -1,7 +1,9 @@
+// 系列1
+
 // 最基础的 react 版本
 // 渲染和更新
 // 缺点：
-// 1. vnode 本身不支持状态，这样在更新的时候需要重新自己生成一个完整的 vnode 用来渲染
+// 1. 更新的时候需要重新自己生成一个完整的 vnode 用来渲染
 // 2. 更新的时候是全替的，重新生成一个完整的 dom 是是否影响性能的
 
 // vnode 结构如下，在 react 里 vnode 被称为 fiber，
@@ -53,12 +55,6 @@ function createDom(fiber) {
     children?.forEach((vnode) => node.appendChild(createDom(vnode)));
   }
 
-  // add attributes to node
-  const isProperty = (attr) => attr !== "children";
-  Object.keys(props)
-    .filter(isProperty)
-    .forEach((attr) => (node[attr] = props[attr]));
-
   // set listener
   const isListener = (attr) => attr.startsWith("on");
   Object.keys(props)
@@ -68,6 +64,12 @@ function createDom(fiber) {
       node.removeEventListener(type, props[listener]);
       node.addEventListener(type, props[listener]);
     });
+
+  // add attributes to node
+  const isProperty = (attr) => attr !== "children" && !isListener(attr);
+  Object.keys(props)
+    .filter(isProperty)
+    .forEach((attr) => (node[attr] = props[attr]));
 
   return node;
 }

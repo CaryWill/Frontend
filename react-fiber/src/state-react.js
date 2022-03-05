@@ -1,5 +1,6 @@
 /** @jsx Didact.createElement */
 // 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
+// 系列2
 
 function createElement(type, props, ...children) {
   return {
