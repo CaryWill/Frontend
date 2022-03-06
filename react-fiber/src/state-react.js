@@ -21,7 +21,7 @@ function createElement(type, props, ...children) {
   };
 }
 
-function createDom(fiber) {
+function instantiate(fiber) {
   const { type } = fiber;
   const props = fiber.props || {};
   const { children } = props || {};
@@ -31,12 +31,12 @@ function createDom(fiber) {
   if (typeof type !== "string") {
     // 组件
     const instance = new type(props);
-    node = createDom(instance.render());
+    node = instantiate(instance.render());
   } else if (type === "TEXT_ELEMENT") {
     node = document.createTextNode("");
   } else {
     node = document.createElement(type);
-    children?.forEach((vnode) => node.appendChild(createDom(vnode)));
+    children?.forEach((vnode) => node.appendChild(instantiate(vnode)));
   }
 
   // set listener
@@ -45,7 +45,6 @@ function createDom(fiber) {
     .filter(isListener)
     .forEach((listener) => {
       const type = listener.toLowerCase().slice(2);
-      node.removeEventListener(type, props[listener]);
       node.addEventListener(type, props[listener]);
     });
 
@@ -59,7 +58,7 @@ function createDom(fiber) {
 }
 
 function render(fiber, container) {
-  const node = createDom(fiber);
+  const node = instantiate(fiber);
   if (container.lastChild) {
     // 因为我们一开始使用的是 appendChild 所以我们只需要使用 `lastChild`
     // 就可以获得容器里的所有内容了

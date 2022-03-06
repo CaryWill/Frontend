@@ -1,7 +1,10 @@
 /** @jsx Didact.createElement */
-// 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
-// 系列2
 
+// 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
+// 系列3
+
+// vnode 包一层
+let rootInstance = null;
 function createElement(type, props, ...children) {
   return {
     type,
@@ -21,73 +24,69 @@ function createElement(type, props, ...children) {
   };
 }
 
-let
+// 将之前的 createDom 放到实例化方法这
 function instantiate(vnode) {
   const { type } = vnode;
   const props = vnode.props || {};
-  const { children } = props || {};
+  const isDomElement = typeof type === "string";
+  let childInstances = [];
+  let dom;
 
-  // create corresponding node
-  let node;
-  if (typeof type !== "string") {
-    // 组件
-    const instance = new type(props);
-    const element = instance.render();
-    node = instantiate(element);
-    instance.__internalInstance = { dom: node, element };
-  } else if (type === "TEXT_ELEMENT") {
-    node = document.createTextNode("");
+  if (isDomElement) {
+    if (type === "TEXT_ELEMENT") {
+      dom = document.createTextNode("");
+    } else {
+      dom = document.createElement(type);
+    }
+
+    const childElements = props.children || [];
+    childInstances = childElements.map(instantiate);
+    const childDoms = childInstances.map((childInstance) => childInstance.dom);
+    childDoms.forEach((childDom) => dom.appendChild(childDom));
   } else {
-    node = document.createElement(type);
-    children?.forEach((vnode) => node.appendChild(instantiate(vnode)));
+    const instance = new type(props);
+    element = instance.render();
+    childInstances = [instantiate(element)];
+    dom = childInstances[0].dom;
   }
-
   // set listener
   const isListener = (attr) => attr.startsWith("on");
   Object.keys(props)
     .filter(isListener)
     .forEach((listener) => {
       const type = listener.toLowerCase().slice(2);
-      node.addEventListener(type, props[listener]);
+      dom.addEventListener(type, props[listener]);
     });
 
   // add attributes to node
   const isProperty = (attr) => attr !== "children" && !isListener(attr);
   Object.keys(props)
     .filter(isProperty)
-    .forEach((attr) => (node[attr] = props[attr]));
+    .forEach((attr) => (dom[attr] = props[attr]));
 
-  return node;
+  const fiber = { dom, element, childInstances };
+  return fiber;
 }
 
-function render(vnode, container) {
-  const node = instantiate(vnode);
-  if (container.lastChild) {
-    // 因为我们一开始使用的是 appendChild 所以我们只需要使用 `lastChild`
-    // 就可以获得容器里的所有内容了
-    container.replaceChild(node, container.lastChild);
+function render(vnode, parentDom) {
+  let prevInstance = rootInstance;
+  let nextInstance = instantiate(vnode);
+  if (prevInstance) {
+    parentDom.replaceChild(nextInstance.dom, prevInstance.dom);
   } else {
-    container.appendChild(node);
+    parentDom.appendChild(nextInstance.dom);
   }
+  rootInstance = nextInstance;
 }
+
+function updateInstance() {
+
+}
+
 const Didact = {
   createElement,
 };
 const container = document.getElementById("root");
-
-/**
- * 为什么需要重新创建一个 vnode 来更新的例子
-  const state = { count: 1 };
-  const count = state.count;
-  const getCount = () => state.count;
-  console.log(count); // 1
-  console.log(getCount()); // 1
-  state.count += 1;
-  console.log(count); // 1 // 不是 2
-  console.log(state.count); // 2
-  console.log(getCount()); // 2
-* 为了支持状态 我们需要引入函数动态生成 vnode
- */
 
 class Component {
   constructor(props) {
@@ -97,16 +96,10 @@ class Component {
 
   setState = (partialState) => {
     this.state = { ...this.state, ...partialState };
-    updateInstance(this.__internalInstance);
+    // 而且我们还需要每次的调用更新的方法，我们可以将其移动到 `this.setState` 方法里面
+    updateInstance(this)
   };
 }
-
-function updateInstance(instance) {
-  const parentDom = instance.dom.parentNode;
-  const vnode = instance.element;
-  render(vnode, parentDom);
-}
-
 Didact.Component = Component;
 
 class App extends Didact.Component {

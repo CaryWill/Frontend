@@ -42,7 +42,6 @@ function createDom(fiber) {
 
   Object.keys(props).filter(isListener).forEach(listener => {
     const type = listener.toLowerCase().slice(2);
-    node.removeEventListener(type, props[listener]);
     node.addEventListener(type, props[listener]);
   }); // add attributes to node
 
@@ -123,7 +122,6 @@ class App extends Didact.Component {
         // reconcilation 来只更新当前组件的 dom
         // 我们会将 vnode 包一层，这样我们可以拿到每一个 vnode 对应的 dom 节点
         // 进行 patch 更新
-
         this.props.update();
       }
     }, "click"));

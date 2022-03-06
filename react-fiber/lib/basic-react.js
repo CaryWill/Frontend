@@ -57,7 +57,6 @@ function createDom(fiber) {
 
   Object.keys(props).filter(isListener).forEach(listener => {
     const type = listener.toLowerCase().slice(2);
-    node.removeEventListener(type, props[listener]);
     node.addEventListener(type, props[listener]);
   }); // add attributes to node
 
