@@ -1,7 +1,6 @@
 /** @jsx Didact.createElement */
 // 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
-// 系列 3
-// 将 `props.update` 替换为 全局变量记录 root vnode 的形式
+// 系列 4
 function createElement(type, props, ...children) {
   return {
     type,
@@ -83,9 +82,7 @@ class Component {
   setState = partialState => {
     this.state = { ...this.state,
       ...partialState
-    }; // 虽然现在不用我们每次手动调用父组件的 render 了
-    // 但是现在还有一个问题，就是每次渲染
-
+    };
     container.replaceChild(instantiate(rootInstance.instance.render()).dom, container.lastChild);
   };
 }

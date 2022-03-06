@@ -34,7 +34,7 @@ function createElement(type, props, ...children) {
   };
 }
 
-function createDom(fiber) {
+function instantiate(fiber) {
   const {
     type
   } = fiber;
@@ -49,7 +49,7 @@ function createDom(fiber) {
     node = document.createTextNode("");
   } else {
     node = document.createElement(type);
-    children?.forEach(vnode => node.appendChild(createDom(vnode)));
+    children?.forEach(vnode => node.appendChild(instantiate(vnode)));
   } // set listener
 
 
@@ -67,7 +67,7 @@ function createDom(fiber) {
 }
 
 function render(fiber, container) {
-  const node = createDom(fiber);
+  const node = instantiate(fiber);
 
   if (container.lastChild) {
     // 因为我们一开始使用的是 appendChild 所以我们只需要使用 `lastChild`

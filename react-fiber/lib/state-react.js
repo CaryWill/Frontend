@@ -15,7 +15,7 @@ function createElement(type, props, ...children) {
   };
 }
 
-function createDom(fiber) {
+function instantiate(fiber) {
   const {
     type
   } = fiber;
@@ -29,12 +29,12 @@ function createDom(fiber) {
   if (typeof type !== "string") {
     // 组件
     const instance = new type(props);
-    node = createDom(instance.render());
+    node = instantiate(instance.render());
   } else if (type === "TEXT_ELEMENT") {
     node = document.createTextNode("");
   } else {
     node = document.createElement(type);
-    children?.forEach(vnode => node.appendChild(createDom(vnode)));
+    children?.forEach(vnode => node.appendChild(instantiate(vnode)));
   } // set listener
 
 
@@ -52,7 +52,7 @@ function createDom(fiber) {
 }
 
 function render(fiber, container) {
-  const node = createDom(fiber);
+  const node = instantiate(fiber);
 
   if (container.lastChild) {
     // 因为我们一开始使用的是 appendChild 所以我们只需要使用 `lastChild`
@@ -122,6 +122,7 @@ class App extends Didact.Component {
         // reconcilation 来只更新当前组件的 dom
         // 我们会将 vnode 包一层，这样我们可以拿到每一个 vnode 对应的 dom 节点
         // 进行 patch 更新
+
         this.props.update();
       }
     }, "click"));

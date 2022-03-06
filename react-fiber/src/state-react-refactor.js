@@ -1,22 +1,20 @@
 /** @jsx Didact.createElement */
-
 // 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
-// 系列3
+// 系列 3
+// 将 `props.update` 替换为 全局变量记录 root vnode 的形式
 
-// vnode 包一层
-let rootInstance = null;
 function createElement(type, props, ...children) {
   return {
     type,
     props: {
       ...props,
-      children: children.map((fiber) =>
-        typeof fiber === "object"
-          ? fiber
+      children: children.map((vnode) =>
+        typeof vnode === "object"
+          ? vnode
           : {
               type: "TEXT_ELEMENT",
               props: {
-                nodeValue: fiber,
+                nodeValue: vnode,
               },
             }
       ),
@@ -24,65 +22,61 @@ function createElement(type, props, ...children) {
   };
 }
 
-// 将之前的 createDom 放到实例化方法这
 function instantiate(vnode) {
-  const { type } = vnode;
-  const props = vnode.props || {};
+  const { type, props } = vnode;
   const isDomElement = typeof type === "string";
-  let childInstances = [];
-  let dom;
+  const fiber = {};
 
   if (isDomElement) {
-    if (type === "TEXT_ELEMENT") {
-      dom = document.createTextNode("");
-    } else {
-      dom = document.createElement(type);
-    }
+    const dom =
+      type === "TEXT_ELEMENT"
+        ? document.createTextNode("")
+        : document.createElement(type);
 
-    const childElements = props.children || [];
-    childInstances = childElements.map(instantiate);
+    const childVnodes = props.children || [];
+    const childInstances = childVnodes.map(instantiate);
     const childDoms = childInstances.map((childInstance) => childInstance.dom);
     childDoms.forEach((childDom) => dom.appendChild(childDom));
+
+    // set listener
+    const isListener = (attr) => attr.startsWith("on");
+    Object.keys(props)
+      .filter(isListener)
+      .forEach((listener) => {
+        const type = listener.toLowerCase().slice(2);
+        dom.addEventListener(type, props[listener]);
+      });
+
+    // add attributes to node
+    const isProperty = (attr) => attr !== "children" && !isListener(attr);
+    Object.keys(props)
+      .filter(isProperty)
+      .forEach((attr) => (dom[attr] = props[attr]));
+
+    fiber.dom = dom;
+    fiber.element = vnode;
   } else {
     const instance = new type(props);
-    element = instance.render();
-    childInstances = [instantiate(element)];
-    dom = childInstances[0].dom;
+    const element = instance.render();
+    fiber.dom = instantiate(element).dom;
+    fiber.element = element;
+    fiber.instance = instance;
   }
-  // set listener
-  const isListener = (attr) => attr.startsWith("on");
-  Object.keys(props)
-    .filter(isListener)
-    .forEach((listener) => {
-      const type = listener.toLowerCase().slice(2);
-      dom.addEventListener(type, props[listener]);
-    });
 
-  // add attributes to node
-  const isProperty = (attr) => attr !== "children" && !isListener(attr);
-  Object.keys(props)
-    .filter(isProperty)
-    .forEach((attr) => (dom[attr] = props[attr]));
-
-  const fiber = { dom, element, childInstances };
   return fiber;
 }
 
-function render(vnode, parentDom) {
+let rootInstance = null;
+function render(vnode, container) {
   let prevInstance = rootInstance;
   let nextInstance = instantiate(vnode);
   if (prevInstance) {
-    parentDom.replaceChild(nextInstance.dom, prevInstance.dom);
+    container.replaceChild(nextInstance.dom, container.lastChild);
   } else {
-    parentDom.appendChild(nextInstance.dom);
+    container.appendChild(nextInstance.dom);
   }
   rootInstance = nextInstance;
 }
-
-function updateInstance() {
-
-}
-
 const Didact = {
   createElement,
 };
@@ -96,8 +90,12 @@ class Component {
 
   setState = (partialState) => {
     this.state = { ...this.state, ...partialState };
-    // 而且我们还需要每次的调用更新的方法，我们可以将其移动到 `this.setState` 方法里面
-    updateInstance(this)
+    // 虽然现在不用我们每次手动调用父组件的 render 了
+    // 但是现在还有一个问题，就是每次渲染
+    container.replaceChild(
+      instantiate(rootInstance.instance.render()).dom,
+      container.lastChild
+    );
   };
 }
 Didact.Component = Component;
