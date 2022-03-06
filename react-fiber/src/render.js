@@ -84,6 +84,9 @@ function tick() {
       <h1>{time}</h1>
     </div>
   );
+  // empty children of rootDom
+  rootDom.replaceChildren();
+  // then rerender
   render(clockElement, rootDom);
 }
 

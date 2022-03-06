@@ -86,7 +86,10 @@ const rootDom = document.getElementById("root");
 
 function tick() {
   const time = new Date().toLocaleTimeString();
-  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time));
+  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time)); // empty children of rootDom
+
+  rootDom.replaceChildren(); // then rerender
+
   render(clockElement, rootDom);
 }
 

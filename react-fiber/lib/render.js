@@ -3,6 +3,7 @@
 // 参考文章：
 // 1. https://engineering.hexacta.com/didact-rendering-dom-elements-91c9aa08323b
 // 2. https://engineering.hexacta.com/didact-element-creation-and-jsx-d05171c55c56
+// 3. https://codepen.io/pomber/pen/xdmoWE?editors=0010
 // NOTE: 为了和 React 对齐，这里用
 // `element` 表示 vnode
 // `dom` 表示原生 dom node
@@ -75,11 +76,7 @@ function render(element, parentDom) {
     dom.addEventListener(eventType, props[key]);
   }); // render to dom
 
-  if (parentDom.lastChild) {
-    parentDom.replaceChild(dom, parentDom.lastChild);
-  } else {
-    parentDom.appendChild(dom);
-  }
+  parentDom.appendChild(dom);
 }
 
 const Didact = {
