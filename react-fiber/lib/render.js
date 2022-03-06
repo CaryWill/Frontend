@@ -75,7 +75,11 @@ function render(element, parentDom) {
     dom.addEventListener(eventType, props[key]);
   }); // render to dom
 
-  parentDom.appendChild(dom);
+  if (parentDom.lastChild) {
+    parentDom.replaceChild(dom, parentDom.lastChild);
+  } else {
+    parentDom.appendChild(dom);
+  }
 }
 
 const Didact = {

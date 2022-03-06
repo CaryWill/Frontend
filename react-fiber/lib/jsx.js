@@ -6,8 +6,7 @@
 // NOTE: 为了和 React 对齐，这里用
 // `element` 表示 vnode
 // `dom` 表示原生 dom node
-const TEXT_ELEMENT = "TEXT_ELEMENT"; // 构建 vnode
-
+// 构建 vnode
 function createElement(type, _props, ..._children) {
   // props 如果为空的话 babel 会给你一个 null
   // 这里做下处理让 props 永远为 object
@@ -22,13 +21,13 @@ function createElement(type, _props, ..._children) {
   // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
 
   const children = _children.map(function normalize(child) {
-    if (typeof child === "object") {
-      // element
+    // element
+    if (typeof child.type === "object") {
       return child;
     } else {
       // string(not an element), needs convert to element
       return {
-        type: TEXT_ELEMENT,
+        type: "TEXT_ELEMENT",
         props: {
           nodeValue: child,
           children: []
@@ -45,50 +44,6 @@ function createElement(type, _props, ..._children) {
   };
 }
 
-function render(element, parentDom) {
-  const {
-    type,
-    props
-  } = element;
-  const {
-    children
-  } = props;
-  const isTextElement = type === TEXT_ELEMENT;
-  let dom; // create dom
-
-  if (isTextElement) {
-    dom = document.createTextNode("");
-  } else {
-    dom = document.createElement(type);
-  }
-
-  children.forEach(childElement => render(childElement, dom)); // add props
-
-  const isListener = attr => attr.startsWith("on");
-
-  const isProperty = attr => attr !== "children" && !isListener(attr);
-
-  Object.keys(props).filter(isProperty).forEach(key => dom[key] = props[key]); // add event listener
-
-  Object.keys(props).filter(isListener).forEach(key => {
-    const eventType = key.toLowerCase().slice(2);
-    dom.addEventListener(eventType, props[key]);
-  }); // render to dom
-
-  parentDom.appendChild(dom);
-}
-
 const Didact = {
-  createElement,
-  render
+  createElement
 };
-const rootDom = document.getElementById("root");
-
-function tick() {
-  const time = new Date().toLocaleTimeString();
-  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time));
-  render(clockElement, rootDom);
-}
-
-tick();
-setInterval(tick, 1000);

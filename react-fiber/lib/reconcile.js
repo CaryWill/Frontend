@@ -1,116 +1,96 @@
-/** @jsx Didact.createElement */
-// 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
-// 系列 4
-function createElement(type, props, ...children) {
+// @jsx Didact.createElement
+// NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
+// 参考文章：
+// 1. https://engineering.hexacta.com/didact-rendering-dom-elements-91c9aa08323b
+// 2. https://engineering.hexacta.com/didact-element-creation-and-jsx-d05171c55c56
+// NOTE: 为了和 React 对齐，这里用
+// `element` 表示 vnode
+// `dom` 表示原生 dom node
+const TEXT_ELEMENT = "TEXT_ELEMENT"; // 构建 vnode
+
+function createElement(type, _props, ..._children) {
+  // props 如果为空的话 babel 会给你一个 null
+  // 这里做下处理让 props 永远为 object
+  const props = { ..._props
+  }; // 入参里的 props 参数之后的所有参数都是 child element
+  // 这里统一将那么 child element 整合到 `props.children`
+  // 并且如果 child element 是 text node 的话，就是一个字符串
+  // 我们需要将其转换成 element（vnode）的格式
+  // 比如，<div>123</div> 会转成下面的
+  // React.createElement("div", null, "123")
+  // 比如，<div>123<div>345</div></div> 会转成下面的
+  // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
+
+  const children = _children.map(function normalize(child) {
+    if (typeof child === "object") {
+      // element
+      return child;
+    } else {
+      // string(not an element), needs convert to element
+      return {
+        type: TEXT_ELEMENT,
+        props: {
+          nodeValue: child,
+          children: []
+        }
+      };
+    }
+  });
+
   return {
     type,
     props: { ...props,
-      children: children.map(vnode => typeof vnode === "object" ? vnode : {
-        type: "TEXT_ELEMENT",
-        props: {
-          nodeValue: vnode
-        }
-      })
+      children
     }
   };
 }
 
-function instantiate(vnode) {
+function render(element, parentDom) {
   const {
     type,
     props
-  } = vnode;
-  const isDomElement = typeof type === "string";
-  const fiber = {};
+  } = element;
+  console.log(element, "ele");
+  const {
+    children
+  } = props;
+  const isTextElement = type === TEXT_ELEMENT;
+  let dom; // create dom
 
-  if (isDomElement) {
-    const dom = type === "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(type);
-    const childVnodes = props.children || [];
-    const childInstances = childVnodes.map(instantiate);
-    const childDoms = childInstances.map(childInstance => childInstance.dom);
-    childDoms.forEach(childDom => dom.appendChild(childDom)); // set listener
-
-    const isListener = attr => attr.startsWith("on");
-
-    Object.keys(props).filter(isListener).forEach(listener => {
-      const type = listener.toLowerCase().slice(2);
-      dom.addEventListener(type, props[listener]);
-    }); // add attributes to node
-
-    const isProperty = attr => attr !== "children" && !isListener(attr);
-
-    Object.keys(props).filter(isProperty).forEach(attr => dom[attr] = props[attr]);
-    fiber.dom = dom;
-    fiber.element = vnode;
+  if (isTextElement) {
+    dom = document.createTextNode("");
   } else {
-    const instance = new type(props);
-    const element = instance.render();
-    fiber.dom = instantiate(element).dom;
-    fiber.element = element;
-    fiber.instance = instance;
+    dom = document.createElement(type);
   }
 
-  return fiber;
-}
+  children.forEach(childElement => render(childElement, dom)); // add props
 
-let rootInstance = null;
+  const isListener = attr => attr.startsWith("on");
 
-function render(vnode, container) {
-  let prevInstance = rootInstance;
-  let nextInstance = instantiate(vnode);
+  const isProperty = attr => attr !== "children" && !isListener(attr);
 
-  if (prevInstance) {
-    container.replaceChild(nextInstance.dom, container.lastChild);
-  } else {
-    container.appendChild(nextInstance.dom);
-  }
+  Object.keys(props).filter(isProperty).forEach(key => dom[key] = props[key]); // add event listener
 
-  rootInstance = nextInstance;
+  Object.keys(props).filter(isListener).forEach(key => {
+    const eventType = key.toLowerCase().slice(2);
+    dom.addEventListener(eventType, props[key]);
+  }); // render to dom
+
+  parentDom.appendChild(dom);
+  console.log(dom);
 }
 
 const Didact = {
-  createElement
+  createElement,
+  render
 };
-const container = document.getElementById("root");
+const rootDom = document.getElementById("root");
 
-class Component {
-  constructor(props) {
-    this.props = props;
-    this.state = this.state || {};
-  }
-
-  setState = partialState => {
-    this.state = { ...this.state,
-      ...partialState
-    };
-    container.replaceChild(instantiate(rootInstance.instance.render()).dom, container.lastChild);
-  };
+function tick() {
+  const time = new Date().toLocaleTimeString();
+  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time));
+  render(clockElement, rootDom);
 }
 
-Didact.Component = Component;
-
-class App extends Didact.Component {
-  state = {
-    time: new Date().toString()
-  };
-
-  render() {
-    return Didact.createElement("div", null, Didact.createElement("h1", null, "h1"), Didact.createElement("h2", null, "h2"), Didact.createElement("div", null, this.state.time), Didact.createElement("button", {
-      onClick: () => {
-        this.setState({
-          time: new Date().toString()
-        });
-      }
-    }, "click"));
-  }
-
-}
-
-class Container extends Didact.Component {
-  render() {
-    return Didact.createElement("div", null, Didact.createElement("div", null, "Note:"), Didact.createElement(App, null));
-  }
-
-}
-
-render(Didact.createElement(Container, null), container);
+tick();
+setInterval(tick, 1000);
