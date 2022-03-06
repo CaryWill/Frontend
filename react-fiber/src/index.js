@@ -1,192 +1,42 @@
-/** @jsx Didact.createElement */
-// 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
-// 系列 4
-// 上一回我们重构了 rerender 的逻辑，使用了一个变量存 root vnode 实例
-// 这次的目标是只 patch 变动的 vnode 的部分来 reuse dom
-// 感觉先从实例开讲有点困难 // 后面 diff 的过程串不起来
+// @jsx Didact.createElement
+// NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
+// 参考文章：
+// 1. https://engineering.hexacta.com/didact-rendering-dom-elements-91c9aa08323b
+// 2. https://engineering.hexacta.com/didact-element-creation-and-jsx-d05171c55c56
 
-function createElement(type, props, ...children) {
-  return {
-    type,
-    props: {
-      ...props,
-      children: children.map((vnode) =>
-        typeof vnode === "object"
-          ? vnode
-          : {
-              type: "TEXT_ELEMENT",
-              props: {
-                nodeValue: vnode,
-              },
-            }
-      ),
-    },
-  };
+// NOTE: 为了和 React 对齐，这里用
+// `element` 表示 vnode
+// `dom` 表示原生 dom node
+
+// 构建 vnode
+function createElement(type, _props, ..._children) {
+  // props 如果为空的话 babel 会给你一个 null
+  // 这里做下处理让 props 永远为 object
+  const props = { ..._props };
+  // 入参里的 props 参数之后的所有参数都是 child element
+  // 这里统一将那么 child element 整合到 `props.children`
+  // 并且如果 child element 是 text node 的话，就是一个字符串
+  // 我们需要将其转换成 element（vnode）的格式
+  // 比如，<div>123</div> 会转成下面的
+  // React.createElement("div", null, "123")
+  // 比如，<div>123<div>345</div></div> 会转成下面的
+  // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
+  const children = _children.map(function normalize(child) {
+    // element
+    if (typeof child.type === "object") {
+      return child;
+    } else {
+      // string(not an element), needs convert to element
+      return {
+        type: "TEXT_ELEMENT",
+        props: {
+          nodeValue: child,
+          children: [],
+        },
+      };
+    }
+  });
+  return { type, props: { ...props, children } };
 }
 
-function updateDomProperties(dom, prevProps, nextProps) {
-  const isListener = (attr) => attr.startsWith("on");
-  const isProperty = (attr) => attr !== "children" && !isListener(attr);
-
-  // TODO: remove listeners/properties
-
-  // set listener
-  Object.keys(nextProps)
-    .filter(isListener)
-    .forEach((listener) => {
-      const type = listener.toLowerCase().slice(2);
-      dom.addEventListener(type, nextProps[listener]);
-    });
-
-  // add attributes to node
-  Object.keys(nextProps)
-    .filter(isProperty)
-    .forEach((attr) => (dom[attr] = nextProps[attr]));
-}
-
-function instantiate(vnode) {
-  const { type, props } = vnode;
-  const isDomElement = typeof type === "string";
-
-  if (isDomElement) {
-    const dom =
-      type === "TEXT_ELEMENT"
-        ? document.createTextNode("")
-        : document.createElement(type);
-
-    const childVnodes = props.children || [];
-    const childInstances = childVnodes.map(instantiate);
-    const childDoms = childInstances.map((childInstance) => childInstance.dom);
-    childDoms.forEach((childDom) => dom.appendChild(childDom));
-
-    updateDomProperties(dom, [], props);
-
-    const fiber = { dom, element: vnode, childInstances };
-    return fiber;
-  } else {
-    const instance = new type(props);
-    const element = instance.render();
-    const childInstance = instantiate(element);
-    const fiber = { dom: childInstance.dom, element, instance, childInstance };
-    return fiber;
-  }
-}
-
-function reconcileChildren(prevInstance, vnode) {
-  const { dom: parentDom, childInstances: prevChildInstances } = prevInstance;
-  const nextChildVnodes = vnode.props.children || [];
-  const length = Math.max(prevChildInstances.length, nextChildVnodes.length);
-  const nextChildInstances = [];
-  for (let i = 0; i < length; i++) {
-    nextChildInstances[i] = reconcile(
-      parentDom,
-      prevChildInstances[i],
-      nextChildVnodes[i]
-    );
-  }
-  return nextChildInstances;
-}
-
-function reconcile(parentDom, prevInstance, vnode) {
-  debugger;
-  let nextInstance;
-  // 目标是尽量 reuse dom 来提升性能
-  if (!prevInstance) {
-    nextInstance = instantiate(vnode);
-    parentDom.appendChild(nextInstance.dom);
-  } else if (!vnode) {
-    parentDom.removeChild(prevInstance.dom);
-    nextInstance = null;
-  } else if (prevInstance.element.type !== vnode.type) {
-    // 组件不相同
-    nextInstance = instantiate(vnode);
-    parentDom.replaceChild(nextInstance.dom, prevInstance.dom);
-  } else if (typeof vnode.type === "string") {
-    // 组件返回的 vnode 和 新的 vnode 的 type 进行对比
-    // 虽然两个不同的组件返回的 vnode 也有可能是一样的，但是问题不大
-    // 我们直接复用就行
-    // TODO: 直接复用会有问题吗
-
-    // 更新组件的 props
-    updateDomProperties(
-      prevInstance.dom,
-      prevInstance.element.props,
-      vnode.props
-    );
-    console.log(prevInstance);
-    // 更新 prevInstance.dom
-    prevInstance.childInstances = reconcileChildren(prevInstance, vnode);
-    // 更新 prevInstance.element
-    prevInstance.element = vnode;
-    // 复用之前的 instance
-  } else {
-    // 复合组件
-    const { instance } = vnode;
-    const element = instance.render();
-    const childInstance = reconcile(parentDom, prevInstance, element);
-    prevInstance.dom = childInstance.dom;
-    prevInstance.childInstance = childInstance;
-    instance.element = element;
-  }
-
-  return nextInstance;
-}
-
-let rootInstance = null;
-function render(vnode, container) {
-  let prevInstance = rootInstance;
-  let nextInstance = reconcile(container, prevInstance, vnode);
-  rootInstance = nextInstance;
-}
-const Didact = {
-  createElement,
-};
-const container = document.getElementById("root");
-
-class Component {
-  constructor(props) {
-    this.props = props;
-    this.state = this.state || {};
-  }
-
-  setState = (partialState) => {
-    this.state = { ...this.state, ...partialState };
-    // reuse dom
-    reconcile(container, rootInstance, rootInstance.instance.render());
-  };
-}
-Didact.Component = Component;
-
-class App extends Didact.Component {
-  state = { time: new Date().toString() };
-
-  render() {
-    return (
-      <div>
-        <h1>h1</h1>
-        <h2>h2</h2>
-        <div>{this.state.time}</div>
-        <button
-          onClick={() => {
-            this.setState({ time: new Date().toString() });
-          }}
-        >
-          click
-        </button>
-      </div>
-    );
-  }
-}
-
-class Container extends Didact.Component {
-  render() {
-    return (
-      <div>
-        <div>Note:</div>
-        <App />
-      </div>
-    );
-  }
-}
-
-render(<Container />, container);
+const Didact = { createElement };
