@@ -1,7 +1,8 @@
 /** @jsx Didact.createElement */
 // 上面这一行告诉 babel 使用我们自定义的 `createElement` 来构建 fiber(vnode)
-// 系列 3
-// 将 `props.update` 替换为 全局变量记录 root vnode 的形式
+// 系列 4
+// 上一回我们重构了 rerender 的逻辑，使用了一个变量存 root vnode 实例
+// 这次的目标是只 patch 变动的 vnode 的部分来 reuse dom
 function createElement(type, props, ...children) {
   return {
     type,
@@ -16,56 +17,117 @@ function createElement(type, props, ...children) {
   };
 }
 
+function updateDomProperties(dom, prevProps, nextProps) {
+  const isListener = attr => attr.startsWith("on");
+
+  const isProperty = attr => attr !== "children" && !isListener(attr); // TODO: remove listeners/properties
+  // set listener
+
+
+  Object.keys(nextProps).filter(isListener).forEach(listener => {
+    const type = listener.toLowerCase().slice(2);
+    dom.addEventListener(type, nextProps[listener]);
+  }); // add attributes to node
+
+  Object.keys(nextProps).filter(isProperty).forEach(attr => dom[attr] = nextProps[attr]);
+}
+
 function instantiate(vnode) {
   const {
     type,
     props
   } = vnode;
   const isDomElement = typeof type === "string";
-  const fiber = {};
 
   if (isDomElement) {
     const dom = type === "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(type);
     const childVnodes = props.children || [];
     const childInstances = childVnodes.map(instantiate);
     const childDoms = childInstances.map(childInstance => childInstance.dom);
-    childDoms.forEach(childDom => dom.appendChild(childDom)); // set listener
-
-    const isListener = attr => attr.startsWith("on");
-
-    Object.keys(props).filter(isListener).forEach(listener => {
-      const type = listener.toLowerCase().slice(2);
-      dom.addEventListener(type, props[listener]);
-    }); // add attributes to node
-
-    const isProperty = attr => attr !== "children" && !isListener(attr);
-
-    Object.keys(props).filter(isProperty).forEach(attr => dom[attr] = props[attr]);
-    fiber.dom = dom;
-    fiber.element = vnode;
+    childDoms.forEach(childDom => dom.appendChild(childDom));
+    updateDomProperties(dom, [], props);
+    const fiber = {
+      dom,
+      element: vnode,
+      childInstances
+    };
+    return fiber;
   } else {
     const instance = new type(props);
     const element = instance.render();
-    fiber.dom = instantiate(element).dom;
-    fiber.element = element;
-    fiber.instance = instance;
+    const childInstance = instantiate(element);
+    const fiber = {
+      dom: childInstance.dom,
+      element,
+      instance,
+      childInstance
+    };
+    return fiber;
+  }
+}
+
+function reconcileChildren(prevInstance, vnode) {
+  const {
+    dom: parentDom,
+    childInstances: prevChildInstances
+  } = prevInstance;
+  const nextChildVnodes = vnode.props.children || [];
+  const length = Math.max(prevChildInstances.length, nextChildVnodes.length);
+  const nextChildInstances = [];
+
+  for (let i = 0; i < length; i++) {
+    nextChildInstances[i] = reconcile(parentDom, prevChildInstances[i], nextChildVnodes[i]);
   }
 
-  return fiber;
+  return nextChildInstances;
+}
+
+function reconcile(parentDom, prevInstance, vnode) {
+  debugger;
+  let nextInstance; // 目标是尽量 reuse dom 来提升性能
+
+  if (!prevInstance) {
+    nextInstance = instantiate(vnode);
+    parentDom.appendChild(nextInstance.dom);
+  } else if (!vnode) {
+    parentDom.removeChild(prevInstance.dom);
+    nextInstance = null;
+  } else if (prevInstance.element.type !== vnode.type) {
+    // 组件不相同
+    nextInstance = instantiate(vnode);
+    parentDom.replaceChild(nextInstance.dom, prevInstance.dom);
+  } else if (typeof vnode.type === "string") {
+    // 组件返回的 vnode 和 新的 vnode 的 type 进行对比
+    // 虽然两个不同的组件返回的 vnode 也有可能是一样的，但是问题不大
+    // 我们直接复用就行
+    // TODO: 直接复用会有问题吗
+    // 更新组件的 props
+    updateDomProperties(prevInstance.dom, prevInstance.element.props, vnode.props);
+    console.log(prevInstance); // 更新 prevInstance.dom
+
+    prevInstance.childInstances = reconcileChildren(prevInstance, vnode); // 更新 prevInstance.element
+
+    prevInstance.element = vnode; // 复用之前的 instance
+  } else {
+    // 复合组件
+    const {
+      instance
+    } = vnode;
+    const element = instance.render();
+    const childInstance = reconcile(parentDom, prevInstance, element);
+    prevInstance.dom = childInstance.dom;
+    prevInstance.childInstance = childInstance;
+    instance.element = element;
+  }
+
+  return nextInstance;
 }
 
 let rootInstance = null;
 
 function render(vnode, container) {
   let prevInstance = rootInstance;
-  let nextInstance = instantiate(vnode);
-
-  if (prevInstance) {
-    container.replaceChild(nextInstance.dom, container.lastChild);
-  } else {
-    container.appendChild(nextInstance.dom);
-  }
-
+  let nextInstance = reconcile(container, prevInstance, vnode);
   rootInstance = nextInstance;
 }
 
@@ -83,10 +145,9 @@ class Component {
   setState = partialState => {
     this.state = { ...this.state,
       ...partialState
-    }; // 虽然现在不用我们每次手动调用父组件的 render 了
-    // 但是现在还有一个问题，就是每次渲染
+    }; // reuse dom
 
-    container.replaceChild(instantiate(rootInstance.instance.render()).dom, container.lastChild);
+    reconcile(container, rootInstance, rootInstance.instance.render());
   };
 }
 
