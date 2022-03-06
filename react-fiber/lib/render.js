@@ -3,7 +3,6 @@
 // 参考文章：
 // 1. https://engineering.hexacta.com/didact-rendering-dom-elements-91c9aa08323b
 // 2. https://engineering.hexacta.com/didact-element-creation-and-jsx-d05171c55c56
-// 3. https://codepen.io/pomber/pen/xdmoWE?editors=0010
 // NOTE: 为了和 React 对齐，这里用
 // `element` 表示 vnode
 // `dom` 表示原生 dom node
@@ -87,7 +86,10 @@ const rootDom = document.getElementById("root");
 
 function tick() {
   const time = new Date().toLocaleTimeString();
-  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time));
+  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time)); // empty children of rootDom
+
+  rootDom.replaceChildren(); // then rerender
+
   render(clockElement, rootDom);
 }
 
