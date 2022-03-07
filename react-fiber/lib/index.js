@@ -1,8 +1,7 @@
 // @jsx Didact.createElement
 // NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
 // 参考文章：
-// 1. https://engineering.hexacta.com/didact-rendering-dom-elements-91c9aa08323b
-// 2. https://engineering.hexacta.com/didact-element-creation-and-jsx-d05171c55c56
+// 1. https://engineering.hexacta.com/didact-instances-reconciliation-and-virtual-dom-9316d650f1d0
 // NOTE: 为了和 React 对齐，这里用
 // `element` 表示 vnode，下面可能会互用
 // `dom` 表示原生 dom node
@@ -76,25 +75,44 @@ function instantiate(element) {
     children
   } = props;
   const isTextElement = type === TEXT_ELEMENT;
-  let dom; // create dom
+  const isComponentElement = typeof type !== "string";
+  let dom;
 
-  if (isTextElement) {
-    dom = document.createTextNode("");
+  if (isComponentElement) {
+    let instance = {};
+    const componentInstance = createComponentInstance(element, instance); // vnode(element)
+
+    const childElement = componentInstance.render();
+    const childInstance = instantiate(childElement);
+    const dom = childInstance.dom; // 我们 diff 组件的话，需要 `childInstance`
+
+    Object.assign(instance, {
+      dom,
+      element,
+      componentInstance,
+      childInstance
+    });
+    return instance;
   } else {
-    dom = document.createElement(type);
+    // create dom
+    if (isTextElement) {
+      dom = document.createTextNode("");
+    } else {
+      dom = document.createElement(type);
+    }
+
+    updateDomProperties(dom, [], props);
+    const childElements = children;
+    const childInstances = childElements.map(instantiate); // render child nodes to dom
+
+    childInstances.forEach(childInstance => dom.appendChild(childInstance.dom));
+    const instance = {
+      dom,
+      element,
+      childInstances
+    };
+    return instance;
   }
-
-  updateDomProperties(dom, [], props);
-  const childElements = children;
-  const childInstances = childElements.map(instantiate); // render child nodes to dom
-
-  childInstances.forEach(childInstance => dom.appendChild(childInstance.dom));
-  const instance = {
-    dom,
-    element,
-    childInstances
-  };
-  return instance;
 }
 
 function reconcileChildren(instance, element) {
@@ -136,7 +154,12 @@ function reconcile(parentDom, instance, element) {
   } else if (!element) {
     parentDom.removeChild(prevInstance.dom);
     return null;
-  } else if (prevInstance.element.type === element.type) {
+  } else if (prevInstance.element.type !== element.type) {
+    // 替换 prevInstance
+    const newInstance = instantiate(element);
+    parentDom.replaceChild(newInstance.dom);
+    return newInstance;
+  } else if (typeof element.type === "string") {
     // 更新 prevInstance
     // 如果两个 element（vnode）是同种 tag 的
     // 那么我们更新 prevInstance 身上的 dom 属性/listener 就行了
@@ -151,11 +174,54 @@ function reconcile(parentDom, instance, element) {
     prevInstance.childInstances = reconcileChildren(prevInstance, element);
     return prevInstance;
   } else {
-    // 替换 prevInstance
-    const newInstance = instantiate(element);
-    parentDom.replaceChild(newInstance.dom);
-    return newInstance;
+    // 如果 element 是组件的话
+    // 更新组件
+    // this.props
+    prevInstance.componentInstance.props = element.props;
+    const childElement = prevInstance.componentInstance.render();
+    const prevChildInstance = prevInstance.childInstance; // diff 两个组件实例返回的 vdom
+    // 如果只是更新组件的话，我们其实只需要该组件对应的 vnode instance 就行了
+    // 然后将 vnode instance 身上的组件实例 `render()` 方法调用一下生成新的 vnode
+    // 和 childInstance 里面的 `element` 旧 vnode 进行 reconcile 就行了
+
+    const childInstance = reconcile(parentDom, prevChildInstance, childElement);
+    prevInstance.dom = childInstance.dom;
+    prevInstance.childInstance = childInstance;
+    prevInstance.element = element;
+    return prevInstance;
   }
+}
+
+class Component {
+  constructor(props) {
+    this.props = props || {};
+    this.state = this.state || {}; // 实例有可能自己定义了
+  }
+
+  setState(partialState) {
+    this.state = { ...this.state,
+      ...partialState
+    }; // re-render and patch dom
+
+    const componentVnodeInstance = this.__internalInstance;
+    const parentDom = componentVnodeInstance.dom.parentNode;
+    const element = componentVnodeInstance.element;
+    reconcile(parentDom, componentVnodeInstance, element);
+  }
+
+} // 实例化组件
+
+
+function createComponentInstance(element, internalInstance // vnode 对应的实例，不是组件实例，我们需要获取 vnode 对应的实例身上的 `dom` 属性方便 patch
+) {
+  // 自定义 element 的话实例化组件
+  const {
+    type,
+    props
+  } = element;
+  const componentInstance = new type(props);
+  componentInstance.__internalInstance = internalInstance;
+  return componentInstance;
 }
 
 function render(element, parentDom) {
@@ -167,13 +233,32 @@ function render(element, parentDom) {
 
 const Didact = {
   createElement,
-  render
+  render,
+  Component
 };
+
+class Counter extends Didact.Component {
+  state = {
+    count: 1
+  };
+
+  render() {
+    return Didact.createElement("div", null, this.state.count, Didact.createElement("button", {
+      onClick: () => {
+        this.setState({
+          count: this.state.count + 1
+        });
+      }
+    }, "click"));
+  }
+
+}
+
 const rootDom = document.getElementById("root");
 
 function tick() {
   const time = new Date().toLocaleTimeString();
-  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time)); // 之前的做法太暴力，没有 diff，每次渲染更新都是销毁重建 dom 性能较差
+  const clockElement = Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time), Didact.createElement(Counter, null)); // 之前的做法太暴力，没有 diff，每次渲染更新都是销毁重建 dom 性能较差
   // 如果我们可以记录下上一个 vdom，这样我们可以比较旧的 vdom 和更新
   // vnode（element）的时候生成的新的 vdom，找出需要更新的 vnode
   // 然后对 dom 进行 patch，所以我们需要引入一个新的概念 **instance**
@@ -183,9 +268,10 @@ function tick() {
   // 所对应的 instances。注意一下，这里的 instance 不是指组件的实例。
   // 尽量复用 instance 将有助于减少对 dom 的修改从而提升性能
   // (re)render
+  // 之前的做法还存在问题，
+  // diff 虽然做了，但是每次的 diff 都是全量的 diff
 
   render(clockElement, rootDom);
 }
 
-tick();
-setInterval(tick, 1000);
+tick(); // setInterval(tick, 1000);

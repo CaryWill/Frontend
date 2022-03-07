@@ -73,24 +73,40 @@ function instantiate(element) {
   const { type, props } = element;
   const { children } = props;
   const isTextElement = type === TEXT_ELEMENT;
+  const isComponentElement = typeof type !== "string";
   let dom;
 
-  // create dom
-  if (isTextElement) {
-    dom = document.createTextNode("");
+  if (isComponentElement) {
+    let instance = {};
+    const componentInstance = createComponentInstance(element, instance);
+    // vnode(element)
+    const childElement = componentInstance.render();
+    const childInstance = instantiate(childElement);
+    const dom = childInstance.dom;
+
+    // 我们 diff 组件的话，需要 `childInstance`
+    Object.assign(instance, { dom, element, componentInstance, childInstance });
+    return instance;
   } else {
-    dom = document.createElement(type);
+    // create dom
+    if (isTextElement) {
+      dom = document.createTextNode("");
+    } else {
+      dom = document.createElement(type);
+    }
+
+    updateDomProperties(dom, [], props);
+
+    const childElements = children;
+    const childInstances = childElements.map(instantiate);
+    // render child nodes to dom
+    childInstances.forEach((childInstance) =>
+      dom.appendChild(childInstance.dom)
+    );
+
+    const instance = { dom, element, childInstances };
+    return instance;
   }
-
-  updateDomProperties(dom, [], props);
-
-  const childElements = children;
-  const childInstances = childElements.map(instantiate);
-  // render child nodes to dom
-  childInstances.forEach((childInstance) => dom.appendChild(childInstance.dom));
-
-  const instance = { dom, element, childInstances };
-  return instance;
 }
 
 function reconcileChildren(instance, element) {
@@ -136,7 +152,12 @@ function reconcile(parentDom, instance, element) {
   } else if (!element) {
     parentDom.removeChild(prevInstance.dom);
     return null;
-  } else if (prevInstance.element.type === element.type) {
+  } else if (prevInstance.element.type !== element.type) {
+    // 替换 prevInstance
+    const newInstance = instantiate(element);
+    parentDom.replaceChild(newInstance.dom);
+    return newInstance;
+  } else if (typeof element.type === "string") {
     // 更新 prevInstance
     // 如果两个 element（vnode）是同种 tag 的
     // 那么我们更新 prevInstance 身上的 dom 属性/listener 就行了
@@ -156,11 +177,51 @@ function reconcile(parentDom, instance, element) {
     prevInstance.childInstances = reconcileChildren(prevInstance, element);
     return prevInstance;
   } else {
-    // 替换 prevInstance
-    const newInstance = instantiate(element);
-    parentDom.replaceChild(newInstance.dom);
-    return newInstance;
+    // 如果 element 是组件的话
+    // 更新组件实例
+    // this.props
+    prevInstance.componentInstance.props = element.props;
+    const childElement = prevInstance.componentInstance.render();
+    const prevChildInstance = prevInstance.childInstance;
+    // diff 两个组件实例返回的 vdom
+    // 如果只是更新组件的话，我们其实只需要该组件对应的 vnode instance 就行了
+    // 然后将 vnode instance 身上的组件实例 `render()` 方法调用一下生成新的 vnode
+    // 和 childInstance 里面的 `element` 旧 vnode 进行 reconcile 就行了
+    const childInstance = reconcile(parentDom, prevChildInstance, childElement);
+
+    prevInstance.dom = childInstance.dom;
+    prevInstance.childInstance = childInstance;
+    prevInstance.element = element;
+    return prevInstance;
   }
+}
+
+class Component {
+  constructor(props) {
+    this.props = props || {};
+    this.state = this.state || {}; // 实例有可能自己定义了
+  }
+
+  setState(partialState) {
+    this.state = { ...this.state, ...partialState };
+    // re-render and patch dom
+    const componentVnodeInstance = this.__internalInstance;
+    const parentDom = componentVnodeInstance.dom.parentNode;
+    const element = componentVnodeInstance.element;
+    reconcile(parentDom, componentVnodeInstance, element);
+  }
+}
+
+// 实例化组件
+function createComponentInstance(
+  element,
+  internalInstance // vnode 对应的实例，不是组件实例，我们需要获取 vnode 对应的实例身上的 `dom` 属性方便 patch
+) {
+  // 自定义 element 的话实例化组件
+  const { type, props } = element;
+  const componentInstance = new type(props);
+  componentInstance.__internalInstance = internalInstance;
+  return componentInstance;
 }
 
 function render(element, parentDom) {
@@ -170,7 +231,25 @@ function render(element, parentDom) {
   rootInstance = nextInstance;
 }
 
-const Didact = { createElement, render };
+const Didact = { createElement, render, Component };
+
+class Counter extends Didact.Component {
+  state = { count: 1 };
+  render() {
+    return (
+      <div>
+        {this.state.count}
+        <button
+          onClick={() => {
+            this.setState({ count: this.state.count + 1 });
+          }}
+        >
+          click
+        </button>
+      </div>
+    );
+  }
+}
 
 const rootDom = document.getElementById("root");
 function tick() {
@@ -179,6 +258,7 @@ function tick() {
     <div>
       <span>Date: </span>
       <h1>{time}</h1>
+      <Counter />
     </div>
   );
 
@@ -193,8 +273,10 @@ function tick() {
   // 尽量复用 instance 将有助于减少对 dom 的修改从而提升性能
 
   // (re)render
+  // 之前的做法还存在问题，
+  // diff 虽然做了，但是每次的 diff 都是全量的 diff
   render(clockElement, rootDom);
 }
 
 tick();
-setInterval(tick, 1000);
+// setInterval(tick, 1000);
