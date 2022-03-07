@@ -105,6 +105,10 @@ function instantiate(element) {
     );
 
     const instance = { dom, element, childInstances };
+
+    // 这里引入了新的数据结构，`instance`，方便我们给 dom 做 patch
+    // 而不是全量 vdom 的 diff，这里的 `instance` 为了和组件的 `component instance`
+    // 做区别，会分别使用两个词来指代。
     return instance;
   }
 }
