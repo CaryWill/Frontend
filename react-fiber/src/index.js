@@ -453,6 +453,8 @@ function render(element, parentDom) {
   // 一个 fiber 的 diff 是一个 work
   requestIdleCallback(performWork);
 }
+// 用 Didact.render 的时候，直接跑 diff 
+requestIdleCallback(workLoop);
 
 const Didact = { createElement, render, Component };
 
