@@ -84,15 +84,14 @@ const UPDATE = 3;
 
 function reconcileChildrenArray(wipFiber, newChildElements) {
   const elements = Array.isArray(newChildElements) ? newChildElements : [newChildElements];
-  let index = 0;
   let oldFiber = wipFiber.alternate?.child;
   let prevSibling = null; // wipFiber.alternate.child (也就是 oldFiber) 链表形式
   // 和 newChildElement 数组是一一对应的
   // 所以如果 elements[index] 有值，oldFiber 无值
   // 说明新增了 一些 elements，反之，删除了一些 elements
 
-  while (index < elements.length || oldFiber) {
-    console.log("test");
+  for (let index = 0; index < elements.length || oldFiber; oldFiber = oldFiber?.sibling, // 继续链表里的下一个 oldFiber
+  index++) {
     const element = elements[index];
     let newFiber = null;
     const sameType = oldFiber && element && oldFiber.type === element.type;
@@ -131,20 +130,17 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           wipFiber.effects = wipFiber.effects || [];
           wipFiber.effects.push(oldFiber);
         }
-      } // 将 newFiber 关联到 wipFiber 上建立链表
-
-
-      if (index === 0) {
-        wipFiber.child = newFiber;
-      } else if (element) {
-        prevSibling.sibling = newFiber;
       }
+    } // 将 newFiber 关联到 wipFiber 上建立链表
 
-      prevSibling = newFiber; // 继续链表里的下一个 oldFiber
 
-      oldFiber = oldFiber?.sibling;
-      index++;
+    if (index === 0) {
+      wipFiber.child = newFiber;
+    } else if (element) {
+      prevSibling.sibling = newFiber;
     }
+
+    prevSibling = newFiber;
   }
 }
 
@@ -298,8 +294,8 @@ function kickStartWorkLoop() {
       tag: HOST_ROOT,
       // commit phase 做判断的时候需要
       stateNode: root.stateNode,
-      instance: update.instance,
-      partialState: update.partialState
+      props: root.props,
+      alternate: root
     };
   }
 }

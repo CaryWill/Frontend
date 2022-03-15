@@ -89,15 +89,18 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
     ? newChildElements
     : [newChildElements];
 
-  let index = 0;
   let oldFiber = wipFiber.alternate?.child;
   let prevSibling = null;
   // wipFiber.alternate.child (也就是 oldFiber) 链表形式
   // 和 newChildElement 数组是一一对应的
   // 所以如果 elements[index] 有值，oldFiber 无值
   // 说明新增了 一些 elements，反之，删除了一些 elements
-  while (index < elements.length || oldFiber) {
-    console.log("test");
+  for (
+    let index = 0;
+    index < elements.length || oldFiber;
+    oldFiber = oldFiber?.sibling, // 继续链表里的下一个 oldFiber
+      index++
+  ) {
     const element = elements[index];
     let newFiber = null;
 
@@ -113,8 +116,7 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
         props: element.props, // 可能会有 children
         parent: wipFiber,
         alternate: oldFiber,
-        // TODO: 下面这个值不需要啊，stateNode 身上有最新的 state
-        // partialState: oldFiber.partialState,
+        partialState: oldFiber.partialState, // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
         effectTag: UPDATE,
       };
     } else {
@@ -138,19 +140,14 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           wipFiber.effects.push(oldFiber);
         }
       }
-
-      // 将 newFiber 关联到 wipFiber 上建立链表
-      if (index === 0) {
-        wipFiber.child = newFiber;
-      } else if (element) {
-        prevSibling.sibling = newFiber;
-      }
-      prevSibling = newFiber;
-
-      // 继续链表里的下一个 oldFiber
-      oldFiber = oldFiber?.sibling;
-      index++;
     }
+    // 将 newFiber 关联到 wipFiber 上建立链表
+    if (index === 0) {
+      wipFiber.child = newFiber;
+    } else if (element) {
+      prevSibling.sibling = newFiber;
+    }
+    prevSibling = newFiber;
   }
 }
 
@@ -305,8 +302,8 @@ function kickStartWorkLoop() {
     nextUnitOfWork = {
       tag: HOST_ROOT, // commit phase 做判断的时候需要
       stateNode: root.stateNode,
-      instance: update.instance,
-      partialState: update.partialState,
+      props: root.props,
+      alternate: root,
     };
   }
 }
@@ -393,7 +390,6 @@ function workLoop(deadline) {
 
 // 用来清空 updateQueue 的
 function performWork(deadline) {
-  debugger;
   // Step3: 渐进式 diff
   workLoop(deadline);
 
@@ -439,13 +435,12 @@ const CLASS_COMPONENT = "class";
 const HOST_ROOT = "root";
 
 function render(element, parentDom) {
-  debugger;
   // Step1: queue 一个 update
   updateQueue.push({
     from: HOST_ROOT,
     dom: parentDom,
     newProps: {
-      children: [element], // TODO: 暂时不支持渲染数组
+      children: [element],
     },
   });
 
