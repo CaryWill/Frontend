@@ -2,6 +2,7 @@
 // NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
 // 参考文章：
 // 1. https://engineering.hexacta.com/didact-instances-reconciliation-and-virtual-dom-9316d650f1d0
+// 2. https://codepen.io/carywill/pen/Exojaeg?editors=0010
 
 // fiber
 // let fiber = {
