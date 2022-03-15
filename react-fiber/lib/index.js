@@ -107,12 +107,12 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
         // 可能会有 children
         parent: wipFiber,
         alternate: oldFiber,
-        // TODO: 下面这个值不需要啊，stateNode 身上有最新的 state
-        // partialState: oldFiber.partialState,
+        partialState: oldFiber.partialState,
+        // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
         effectTag: UPDATE
       };
     } else {
-      // 销毁重建
+      // 销毁新增或者只新增或者只销毁
       if (element) {
         // 新增
         newFiber = {
@@ -122,14 +122,14 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           parent: wipFiber,
           effectTag: PLACEMENT
         };
-      } else {
+      }
+
+      if (oldFiber) {
         // 删除
         // 注意这个是 旧的 fiber
-        if (oldFiber) {
-          oldFiber.effectTag = DELETION;
-          wipFiber.effects = wipFiber.effects || [];
-          wipFiber.effects.push(oldFiber);
-        }
+        oldFiber.effectTag = DELETION;
+        wipFiber.effects = wipFiber.effects || [];
+        wipFiber.effects.push(oldFiber);
       }
     } // 将 newFiber 关联到 wipFiber 上建立链表
 
@@ -298,7 +298,8 @@ function kickStartWorkLoop() {
       alternate: root
     };
   }
-}
+} // TODO: not work
+
 
 function commitDeletion(fiber, parentDom) {
   if (fiber.tag === CLASS_COMPONENT) {
@@ -325,7 +326,7 @@ function commitDeletion(fiber, parentDom) {
       node = node.sibling;
     }
   } else {
-    parentDom.removeChild(fiber.state.node);
+    parentDom.removeChild(fiber.stateNode);
   }
 } // 打了 effectTag 的 fiber 就是一个 effect
 
@@ -384,8 +385,7 @@ function workLoop(deadline) {
 
 
 function performWork(deadline) {
-  debugger; // Step3: 渐进式 diff
-
+  // Step3: 渐进式 diff
   workLoop(deadline);
   const isCurrentUpdateNotFinished = nextUnitOfWork;
   const haveMoreUpdateInTheQueue = updateQueue.length > 0;
@@ -433,14 +433,12 @@ const CLASS_COMPONENT = "class";
 const HOST_ROOT = "root";
 
 function render(element, parentDom) {
-  debugger; // Step1: queue 一个 update
-
+  // Step1: queue 一个 update
   updateQueue.push({
     from: HOST_ROOT,
     dom: parentDom,
     newProps: {
-      children: [element] // TODO: 暂时不支持渲染数组
-
+      children: [element]
     }
   }); // Step2: diff 一个 update
   // 一个 update 会有很多 fiber 的 diff
@@ -463,7 +461,7 @@ class Counter extends Didact.Component {
   };
 
   render() {
-    return Didact.createElement("div", null, this.state.count, Didact.createElement("button", {
+    return Didact.createElement("div", null, this.state.count, this.state.count === 1 && Didact.createElement("div", null, "only 3 shown"), Didact.createElement("button", {
       onClick: () => {
         this.setState({
           count: this.state.count + 1

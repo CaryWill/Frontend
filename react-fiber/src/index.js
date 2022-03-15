@@ -120,7 +120,7 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
         effectTag: UPDATE,
       };
     } else {
-      // 销毁重建
+      // 销毁新增或者只新增或者只销毁
       if (element) {
         // 新增
         newFiber = {
@@ -131,14 +131,14 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           parent: wipFiber,
           effectTag: PLACEMENT,
         };
-      } else {
+      }
+
+      if (oldFiber) {
         // 删除
         // 注意这个是 旧的 fiber
-        if (oldFiber) {
-          oldFiber.effectTag = DELETION;
-          wipFiber.effects = wipFiber.effects || [];
-          wipFiber.effects.push(oldFiber);
-        }
+        oldFiber.effectTag = DELETION;
+        wipFiber.effects = wipFiber.effects || [];
+        wipFiber.effects.push(oldFiber);
       }
     }
     // 将 newFiber 关联到 wipFiber 上建立链表
@@ -331,7 +331,7 @@ function commitDeletion(fiber, parentDom) {
       node = node.sibling;
     }
   } else {
-    parentDom.removeChild(fiber.state.node);
+    parentDom.removeChild(fiber.stateNode);
   }
 }
 
@@ -460,6 +460,7 @@ class Counter extends Didact.Component {
     return (
       <div>
         {this.state.count}
+        {this.state.count === 1 && <div>only 3 shown</div>}
         <button
           onClick={() => {
             this.setState({ count: this.state.count + 1 });
