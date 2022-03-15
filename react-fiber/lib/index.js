@@ -31,7 +31,8 @@ function createElement(type, _props, ..._children) {
   // 比如，<div>123<div>345</div></div> 会转成下面的
   // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
 
-  const children = _children.map(function normalize(child) {
+  const children = _children.filter(c => c != null && c !== false) // null 和 false 值 不渲染
+  .map(function normalize(child) {
     if (typeof child === "object") {
       // element
       return child;
@@ -298,8 +299,7 @@ function kickStartWorkLoop() {
       alternate: root
     };
   }
-} // TODO: not work
-
+}
 
 function commitDeletion(fiber, parentDom) {
   if (fiber.tag === CLASS_COMPONENT) {
