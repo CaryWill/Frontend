@@ -91,8 +91,8 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
   // 所以如果 elements[index] 有值，oldFiber 无值
   // 说明新增了 一些 elements，反之，删除了一些 elements
 
-  while (index < elements.length || !oldFiber) {
-    console.log('test');
+  while (index < elements.length || oldFiber) {
+    console.log("test");
     const element = elements[index];
     let newFiber = null;
     const sameType = oldFiber && element && oldFiber.type === element.type;
@@ -104,8 +104,8 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
         type: element.type,
         tag: oldFiber.tag,
         stateNode: oldFiber.stateNode,
-        // 可能会有 children
         props: element.props,
+        // 可能会有 children
         parent: wipFiber,
         alternate: oldFiber,
         // TODO: 下面这个值不需要啊，stateNode 身上有最新的 state
@@ -131,19 +131,18 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           wipFiber.effects = wipFiber.effects || [];
           wipFiber.effects.push(oldFiber);
         }
-      } // 继续链表里的下一个 oldFiber
+      } // 将 newFiber 关联到 wipFiber 上建立链表
 
-
-      oldFiber = oldFiber?.sibling; // 将 newFiber 关联到 wipFiber 上建立链表
 
       if (index === 0) {
         wipFiber.child = newFiber;
-        prevSibling = newFiber;
       } else if (element) {
         prevSibling.sibling = newFiber;
-        prevSibling = newFiber;
       }
 
+      prevSibling = newFiber; // 继续链表里的下一个 oldFiber
+
+      oldFiber = oldFiber?.sibling;
       index++;
     }
   }
@@ -157,20 +156,19 @@ function updateClassComponent(wipFiber) {
   if (!instance) {
     instance = createComponentInstance(wipFiber);
     wipFiber.stateNode = instance;
-  } else {
-    // 更新组件
-    instance.props = wipFiber.props;
-    instance.state = { ...instance.state,
-      ...wipFiber.partialState
-    };
-    wipFiber.partialState = null; // 根据新的 state 和 props 生成新的组件返回值（children）
+  } else {// TODO: props 和 state 没变的话，可以做一个优化
+    // clone and return
+  } // 更新组件
 
-    const newChildElements = wipFiber.stateNode.render(); // 为每一个 child 创建一个 fiber 并且和链表到 wipFiber
-    // TODO: 组件 `render` 函数暂时不支持返回数组
 
-    reconcileChildrenArray(wipFiber, newChildElements);
-  } // TODO: props 和 state 没变的话，可以做一个优化
+  instance.props = wipFiber.props;
+  instance.state = Object.assign({}, instance.state, wipFiber.partialState);
+  wipFiber.partialState = null; // 根据新的 state 和 props 生成新的组件返回值（children）
 
+  const newChildElements = wipFiber.stateNode.render(); // 为每一个 child 创建一个 fiber 并且和链表到 wipFiber
+  // TODO: 组件 `render` 函数暂时不支持返回数组
+
+  reconcileChildrenArray(wipFiber, newChildElements);
 }
 
 function completeWork(fiber) {
@@ -186,8 +184,9 @@ function completeWork(fiber) {
 
   if (fiber.parent) {
     const childEffects = fiber.effects || [];
-    const selfEffect = fiber.effectTag;
-    fiber.parent.effects = [...fiber.parent.effects, selfEffect, ...childEffects];
+    const selfEffect = fiber.effectTag ? [fiber] : [];
+    fiber.parent.effects = fiber.parent.effects || [];
+    fiber.parent.effects = [...fiber.parent.effects, ...selfEffect, ...childEffects];
   } else {
     // fiber root, a.k.a wipRoot
     // diff 完毕进入 commit phase
@@ -207,10 +206,10 @@ function updateHostComponent(wipFiber) {
 
   if (!dom) {
     wipFiber.stateNode = createDomElement(wipFiber);
-  } else {
-    const newChildElements = wipFiber.props.children;
-    reconcileChildrenArray(wipFiber, newChildElements);
   }
+
+  const newChildElements = wipFiber.props.children;
+  reconcileChildrenArray(wipFiber, newChildElements);
 } // diff 单个 fiber
 // diff 该 fiber 的 children，并通过链表和 fiber 进行关联
 
@@ -294,7 +293,7 @@ function kickStartWorkLoop() {
     // 是因为我们可以在后面 diff 的时候看 this.state
     // 和 update.partialState 对比，看是否需要重新渲染
     // 来做一个优化，毕竟只有 props 或者 state 改变了才会重新渲染
-    instance.__fiber.partialState = update.partialState;
+    update.instance.__fiber.partialState = update.partialState;
     nextUnitOfWork = {
       tag: HOST_ROOT,
       // commit phase 做判断的时候需要
@@ -359,6 +358,7 @@ const commitWork = fiber => {
 };
 
 function commitAllWork(fiber) {
+  console.log(fiber, "commitallwork");
   fiber.effects.forEach(effect => commitWork(effect));
   currentRoot = fiber;
   nextUnitOfWork = null;
@@ -374,7 +374,7 @@ function workLoop(deadline) {
 
   let shouldYield = true;
 
-  if (nextUnitOfWork && shouldYield) {
+  while (nextUnitOfWork && shouldYield) {
     nextUnitOfWork = performNextUnitOfWork(nextUnitOfWork);
     shouldYield = deadline.timeRemaining() > ENOUGH_TIME;
   } // Render phase 结束：所有 update 的 diff 都已完成
@@ -388,7 +388,8 @@ function workLoop(deadline) {
 
 
 function performWork(deadline) {
-  // Step3: 渐进式 diff
+  debugger; // Step3: 渐进式 diff
+
   workLoop(deadline);
   const isCurrentUpdateNotFinished = nextUnitOfWork;
   const haveMoreUpdateInTheQueue = updateQueue.length > 0;
@@ -450,8 +451,10 @@ function render(element, parentDom) {
   // 一个 fiber 的 diff 是一个 work
 
   requestIdleCallback(performWork);
-}
+} // 用 Didact.render 的时候，直接跑 diff
 
+
+requestIdleCallback(workLoop);
 const Didact = {
   createElement,
   render,
