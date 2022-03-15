@@ -267,9 +267,9 @@ function kickStartWorkLoop() {
   }
 
   const getFiberRoot = _fiber => {
-    let fiberRoot = _fiber.parent;
+    let fiberRoot = _fiber;
 
-    while (fiberRoot) {
+    while (fiberRoot.parent) {
       fiberRoot = fiberRoot.parent;
     }
 
