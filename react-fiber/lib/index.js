@@ -2,6 +2,7 @@
 // NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
 // 参考文章：
 // 1. https://engineering.hexacta.com/didact-instances-reconciliation-and-virtual-dom-9316d650f1d0
+// 2. https://codepen.io/carywill/pen/Exojaeg?editors=0010
 // fiber
 // let fiber = {
 //   tag: HOST_COMPONENT,
@@ -301,34 +302,52 @@ function kickStartWorkLoop() {
   }
 }
 
-function commitDeletion(fiber, parentDom) {
-  if (fiber.tag === CLASS_COMPONENT) {
-    // 因为 fiber 是链表结构的
-    // 所以 fiber 如果是组件的话 需要.chlid .sibling 的删除
-    // fiber -> child -> sibling -> sibling
-    // ↓ ↑ ----------parent-------------⏎
-    // sibling -> child -> sibling
-    while (true) {
-      let node = fiber;
+function commitDeletion(fiber, domParent) {
+  let node = fiber;
 
-      if (node.tag === CLASS_COMPONENT) {
-        node = node.child;
-        continue;
-      }
-
-      parentDom.removeChild(node.stateNode);
-
-      while (node !== fiber && !node.sibling) {
-        node = node.parent;
-      }
-
-      if (node === fiber) return;
-      node = node.sibling;
+  while (true) {
+    if (node.tag == CLASS_COMPONENT) {
+      node = node.child;
+      continue;
     }
-  } else {
-    parentDom.removeChild(fiber.stateNode);
+
+    domParent.removeChild(node.stateNode);
+
+    while (node != fiber && !node.sibling) {
+      node = node.parent;
+    }
+
+    if (node == fiber) {
+      return;
+    }
+
+    node = node.sibling;
   }
-} // 打了 effectTag 的 fiber 就是一个 effect
+} // function commitDeletion(fiber, parentDom) {
+//   if (fiber.tag === CLASS_COMPONENT) {
+//     // 因为 fiber 是链表结构的
+//     // 所以 fiber 如果是组件的话 需要.chlid .sibling 的删除
+//     // fiber -> child -> sibling -> sibling
+//     // ↓ ↑ ----------parent-------------⏎
+//     // sibling -> child -> sibling
+//     while (true) {
+//       let node = fiber;
+//       if (node.tag === CLASS_COMPONENT) {
+//         node = node.child;
+//         continue;
+//       }
+//       parentDom.removeChild(node.stateNode);
+//       while (node !== fiber && !node.sibling) {
+//         node = node.parent;
+//       }
+//       if (node === fiber) return;
+//       node = node.sibling;
+//     }
+//   } else {
+//     parentDom.removeChild(fiber.stateNode);
+//   }
+// }
+// 打了 effectTag 的 fiber 就是一个 effect
 
 
 const commitWork = fiber => {
@@ -455,13 +474,20 @@ const Didact = {
   Component
 };
 
+class Innter extends Didact.Component {
+  render() {
+    return Didact.createElement("div", null, Didact.createElement("span", null, "1"), Didact.createElement("span", null, "2"));
+  }
+
+}
+
 class Counter extends Didact.Component {
   state = {
     count: 1
   };
 
   render() {
-    return Didact.createElement("div", null, this.state.count, this.state.count === 1 && Didact.createElement("div", null, "only 3 shown"), Didact.createElement("button", {
+    return Didact.createElement("div", null, this.state.count, this.state.count === 1 && Didact.createElement(Innter, null), Didact.createElement("button", {
       onClick: () => {
         this.setState({
           count: this.state.count + 1

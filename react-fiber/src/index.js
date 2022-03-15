@@ -311,30 +311,27 @@ function kickStartWorkLoop() {
   }
 }
 
-function commitDeletion(fiber, parentDom) {
-  if (fiber.tag === CLASS_COMPONENT) {
+function commitDeletion(fiber, domParent) {
+  let node = fiber;
+  while (true) {
     // 因为 fiber 是链表结构的
-    // 所以 fiber 如果是组件的话 需要.chlid .sibling 的删除
+    // 所以 fiber 如果是组件的话 需要.chlid -> .sibling -> uncle(.parent.sibling) 的删除
 
     // fiber -> child -> sibling -> sibling
-    // ↓ ↑ ----------parent-------------⏎
+    // ↓  ↓----------parent-------------⏎
     // sibling -> child -> sibling
-
-    while (true) {
-      let node = fiber;
-      if (node.tag === CLASS_COMPONENT) {
-        node = node.child;
-        continue;
-      }
-      parentDom.removeChild(node.stateNode);
-      while (node !== fiber && !node.sibling) {
-        node = node.parent;
-      }
-      if (node === fiber) return;
-      node = node.sibling;
+    if (node.tag == CLASS_COMPONENT) {
+      node = node.child;
+      continue;
     }
-  } else {
-    parentDom.removeChild(fiber.stateNode);
+    domParent.removeChild(node.stateNode);
+    while (node != fiber && !node.sibling) {
+      node = node.parent;
+    }
+    if (node == fiber) {
+      return;
+    }
+    node = node.sibling;
   }
 }
 
@@ -363,7 +360,6 @@ const commitWork = (fiber) => {
 };
 
 function commitAllWork(fiber) {
-  console.log(fiber, "commitallwork");
   fiber.effects.forEach((effect) => commitWork(effect));
 
   currentRoot = fiber;
@@ -437,6 +433,7 @@ const HOST_COMPONENT = "host";
 const CLASS_COMPONENT = "class";
 const HOST_ROOT = "root";
 
+// 更新的话 都是 fiber 和 element 进行对比
 function render(element, parentDom) {
   // Step1: queue 一个 update
   updateQueue.push({
@@ -456,14 +453,23 @@ function render(element, parentDom) {
 requestIdleCallback(workLoop);
 
 const Didact = { createElement, render, Component };
-
+class Innter extends Didact.Component {
+  render() {
+    return (
+      <div>
+        <span>1</span>
+        <span>2</span>
+      </div>
+    );
+  }
+}
 class Counter extends Didact.Component {
   state = { count: 1 };
   render() {
     return (
       <div>
         {this.state.count}
-        {this.state.count === 1 && <div>only 3 shown</div>}
+        {this.state.count === 1 && <Innter />}
         <button
           onClick={() => {
             this.setState({ count: this.state.count + 1 });
