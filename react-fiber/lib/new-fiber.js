@@ -3,6 +3,9 @@
 // 参考文章：
 // 1. https://engineering.hexacta.com/didact-instances-reconciliation-and-virtual-dom-9316d650f1d0
 // 2. https://codepen.io/carywill/pen/Exojaeg?editors=0010
+// https://pomber.github.io/incremental-rendering-demo/didact.bundle.js?19b2eab298e44d7e7856
+// https://pomber.github.io/incremental-rendering-demo/didact.html
+// https://codepen.io/yashbhardwaj/pen/wvzzeV
 // fiber
 // let fiber = {
 //   tag: HOST_COMPONENT,
@@ -32,7 +35,13 @@ function createElement(type, _props, ..._children) {
   // 比如，<div>123<div>345</div></div> 会转成下面的
   // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
 
-  const children = _children.filter(c => c != null && c !== false) // null 和 false 值 不渲染
+  const rawChildren = _children; // 支持 `render()` 返回数组
+  // 正常多个 child 的话，会是 [{type: 'tr', props:{}},type: 'tr', props:{}}]
+  // 但是返回数组的话就变成了，[[{type: 'tr', props:{}},type: 'tr', props:{}}]]
+
+  const _rawChildren = [].concat(...rawChildren);
+
+  const children = _rawChildren.filter(c => c != null && c !== false) // null 和 false 值 不渲染
   .map(function normalize(child) {
     if (typeof child === "object") {
       // element
