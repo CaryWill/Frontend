@@ -1,3 +1,6 @@
+// https://pomber.github.io/incremental-rendering-demo/didact.bundle.js?19b2eab298e44d7e7856
+// https://pomber.github.io/incremental-rendering-demo/didact.html
+// https://codepen.io/yashbhardwaj/pen/wvzzeV
 /** @jsx Didact.createElement */
 const TEXT_ELEMENT = "TEXT ELEMENT";
 
