@@ -2,10 +2,22 @@
 // NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
 // 参考文章：
 // 1. https://engineering.hexacta.com/didact-instances-reconciliation-and-virtual-dom-9316d650f1d0
+// 2. https://codepen.io/carywill/pen/Exojaeg?editors=0010
 
-// NOTE: 为了和 React 对齐，这里用
-// `element` 表示 vnode，下面可能会互用
-// `dom` 表示原生 dom node
+// fiber
+// let fiber = {
+//   tag: HOST_COMPONENT,
+//   type: "div",
+//   parent: parentFiber, `parent`, `child`, `sibling` 用来组成 fiber tree 链表
+//   child: childFiber,
+//   sibling: null,
+//   alternate: currentFiber,
+//   stateNode: document.createElement("div"),
+//   props: { children: [], className: "foo"},
+//   partialState: null,
+//   effectTag: PLACEMENT,
+//   effects: []
+// };
 
 const TEXT_ELEMENT = "TEXT_ELEMENT";
 // 构建 vnode
@@ -21,21 +33,23 @@ function createElement(type, _props, ..._children) {
   // React.createElement("div", null, "123")
   // 比如，<div>123<div>345</div></div> 会转成下面的
   // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
-  const children = _children.map(function normalize(child) {
-    if (typeof child === "object") {
-      // element
-      return child;
-    } else {
-      // string(not an element), needs convert to element
-      return {
-        type: TEXT_ELEMENT,
-        props: {
-          nodeValue: child,
-          children: [],
-        },
-      };
-    }
-  });
+  const children = _children
+    .filter((c) => c != null && c !== false) // null 和 false 值 不渲染
+    .map(function normalize(child) {
+      if (typeof child === "object") {
+        // element
+        return child;
+      } else {
+        // string(not an element), needs convert to element
+        return {
+          type: TEXT_ELEMENT,
+          props: {
+            nodeValue: child,
+            children: [],
+          },
+        };
+      }
+    });
   return { type, props: { ...props, children } };
 }
 
@@ -69,152 +83,331 @@ function updateDomProperties(dom, prevProps, nextProps) {
     });
 }
 
-function instantiate(element) {
-  const { type, props } = element;
-  const { children } = props;
-  const isTextElement = type === TEXT_ELEMENT;
-  const isComponentElement = typeof type !== "string";
-  let dom;
+// Effect tags
+const PLACEMENT = 1;
+const DELETION = 2;
+const UPDATE = 3;
+function reconcileChildrenArray(wipFiber, newChildElements) {
+  const elements = Array.isArray(newChildElements)
+    ? newChildElements
+    : [newChildElements];
 
-  if (isComponentElement) {
-    let instance = {};
-    const componentInstance = createComponentInstance(element, instance);
-    // vnode(element)
-    const childElement = componentInstance.render();
-    const childInstance = instantiate(childElement);
-    const dom = childInstance.dom;
+  let oldFiber = wipFiber.alternate?.child;
+  let prevSibling = null;
+  // wipFiber.alternate.child (也就是 oldFiber) 链表形式
+  // 和 newChildElement 数组是一一对应的
+  // 所以如果 elements[index] 有值，oldFiber 无值
+  // 说明新增了 一些 elements，反之，删除了一些 elements
+  for (
+    let index = 0;
+    index < elements.length || oldFiber;
+    oldFiber = oldFiber?.sibling, // 继续链表里的下一个 oldFiber
+      index++
+  ) {
+    const element = elements[index];
+    let newFiber = null;
 
-    // 我们 diff 组件的话，需要 `childInstance`
-    Object.assign(instance, { dom, element, componentInstance, childInstance });
-    return instance;
-  } else {
-    // create dom
-    if (isTextElement) {
-      dom = document.createTextNode("");
+    const sameType = oldFiber && element && oldFiber.type === element.type;
+
+    if (sameType) {
+      // 组件相同，那么复用原来的组件
+      // 而且 element 身上只有 type 和 props 两个属性
+      newFiber = {
+        type: element.type,
+        tag: oldFiber.tag,
+        stateNode: oldFiber.stateNode,
+        props: element.props, // 可能会有 children
+        parent: wipFiber,
+        alternate: oldFiber,
+        partialState: oldFiber.partialState, // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
+        effectTag: UPDATE,
+      };
     } else {
-      dom = document.createElement(type);
+      // 销毁新增或者只新增或者只销毁
+      if (element) {
+        // 新增
+        newFiber = {
+          type: element.type,
+          tag:
+            typeof element.type === "string" ? HOST_COMPONENT : CLASS_COMPONENT,
+          props: element.props,
+          parent: wipFiber,
+          effectTag: PLACEMENT,
+        };
+      }
+
+      if (oldFiber) {
+        // 删除
+        // 注意这个是 旧的 fiber
+        oldFiber.effectTag = DELETION;
+        wipFiber.effects = wipFiber.effects || [];
+        wipFiber.effects.push(oldFiber);
+      }
     }
-
-    updateDomProperties(dom, [], props);
-
-    const childElements = children;
-    const childInstances = childElements.map(instantiate);
-    // render child nodes to dom
-    childInstances.forEach((childInstance) =>
-      dom.appendChild(childInstance.dom)
-    );
-
-    const instance = { dom, element, childInstances };
-    return instance;
+    // 将 newFiber 关联到 wipFiber 上建立链表
+    if (index === 0) {
+      wipFiber.child = newFiber;
+    } else if (element) {
+      prevSibling.sibling = newFiber;
+    }
+    prevSibling = newFiber;
   }
 }
 
-function reconcileChildren(instance, element) {
-  const prevInstance = instance;
-  const prevChildInstances = prevInstance.childInstances;
-  const parentDom = prevInstance.dom;
-  // childInstances 里的每一项也都是 instance，
-  // 所以直接使用 reconcile 就行
-  const childElements = element.props.children;
-  const nextChildInstances = [];
-
-  const length = Math.max(prevChildInstances.length, childElements.length);
-
-  for (let i = 0; i < length; i++) {
-    const prevChildInstance = prevChildInstances[i];
-    const childElement = childElements[i];
-
-    // patch child dom
-    // 因为有可能 prevChildInstances.length 比 childElements.length 长
-    // 导致调用下面 `reconcile` 的时候 childElement 为 undefined
-    // 也有可能反之，
-    // prevChildInstance 为 undefined
-    // 所以这两种情况也需要在 reconcile 中 cover 到
-    nextChildInstances[i] = reconcile(
-      parentDom,
-      prevChildInstance,
-      childElement
-    );
-  }
-
-  // 因为有可能 element 被移除，所以同时需要过滤下
-  return nextChildInstances.filter(Boolean);
-}
-
-// 用来存储上一个 instance 以便做 diff
-let rootInstance = null;
-function reconcile(parentDom, instance, element) {
-  const prevInstance = instance;
-  if (!prevInstance) {
-    const newInstance = instantiate(element);
-    parentDom.appendChild(newInstance.dom);
-    return newInstance;
-  } else if (!element) {
-    parentDom.removeChild(prevInstance.dom);
-    return null;
-  } else if (prevInstance.element.type !== element.type) {
-    // 替换 prevInstance
-    const newInstance = instantiate(element);
-    parentDom.replaceChild(newInstance.dom);
-    return newInstance;
-  } else if (typeof element.type === "string") {
-    // 更新 prevInstance
-    // 如果两个 element（vnode）是同种 tag 的
-    // 那么我们更新 prevInstance 身上的 dom 属性/listener 就行了
-    // 复用原有的 dom 节点性能更好
-
-    // 更新 dom
-    updateDomProperties(
-      prevInstance.dom,
-      prevInstance.element.props,
-      element.props
-    );
-    // 更新 element
-    prevInstance.element = element;
-    // 上面只更新了当前 dom 节点的属性，dom 节点 children 的属性也需要更新下
-    // 而 children 的 dom 你可以通过 diff prevInstance 身上的
-    // `childInstances` 这个属性
-    prevInstance.childInstances = reconcileChildren(prevInstance, element);
-    return prevInstance;
+function updateClassComponent(wipFiber) {
+  // 如果是 class 组件的话，那么 stateNode 表示组件实例
+  // 如果是 dom 元素的话，那么 stateNode 表示 dom 节点
+  let instance = wipFiber.stateNode;
+  if (!instance) {
+    instance = createComponentInstance(wipFiber);
+    wipFiber.stateNode = instance;
   } else {
-    // 如果 element 是组件的话
-    // 更新组件实例
-    // this.props
-    prevInstance.componentInstance.props = element.props;
-    const childElement = prevInstance.componentInstance.render();
-    const prevChildInstance = prevInstance.childInstance;
-    // diff 两个组件实例返回的 vdom
-    // 如果只是更新组件的话，我们其实只需要该组件对应的 vnode instance 就行了
-    // 然后将 vnode instance 身上的组件实例 `render()` 方法调用一下生成新的 vnode
-    // 和 childInstance 里面的 `element` 旧 vnode 进行 reconcile 就行了
-    const childInstance = reconcile(parentDom, prevChildInstance, childElement);
+    // TODO: props 和 state 没变的话，可以做一个优化
+    // clone and return
+  }
 
-    prevInstance.dom = childInstance.dom;
-    prevInstance.childInstance = childInstance;
-    prevInstance.element = element;
-    return prevInstance;
+  // 更新组件
+  instance.props = wipFiber.props;
+  instance.state = Object.assign({}, instance.state, wipFiber.partialState);
+  wipFiber.partialState = null;
+
+  // 根据新的 state 和 props 生成新的组件返回值（children）
+  const newChildElements = wipFiber.stateNode.render();
+  // 为每一个 child 创建一个 fiber 并且和链表到 wipFiber
+  // TODO: 组件 `render` 函数暂时不支持返回数组
+  reconcileChildrenArray(wipFiber, newChildElements);
+}
+
+function completeWork(fiber) {
+  // 该 fiber diff 完成
+  // 需要将 fiber 身上有 effect tag 的 fiber 聚集
+  // 到 fiber.parent 身上，这样到最后 wipRoot 身上就会
+  // 有所有的子 fiber 身上的 effects
+
+  // 更新组件身上的 fiber 对象
+  // 如果有多个 update 的话，需要保证组件身上的 fiber 是最新的
+  if (fiber.tag == CLASS_COMPONENT) {
+    fiber.stateNode.__fiber = fiber;
+  }
+
+  if (fiber.parent) {
+    const childEffects = fiber.effects || [];
+    const selfEffect = fiber.effectTag ? [fiber] : [];
+    fiber.parent.effects = fiber.parent.effects || [];
+    fiber.parent.effects = [
+      ...fiber.parent.effects,
+      ...selfEffect,
+      ...childEffects,
+    ];
+  } else {
+    // fiber root, a.k.a wipRoot
+    // diff 完毕进入 commit phase
+    pendingCommit = fiber;
   }
 }
 
-function performNextUnitOfWork(fiber) {
-  if(!fiber.dom) {
-    // TODO: ??
-    const { dom } = instantiate(fiber);
+function createDomElement(fiber) {
+  const isTextElement = fiber.type === TEXT_ELEMENT;
+  const dom = isTextElement
+    ? document.createTextNode("")
+    : document.createElement(fiber.type);
+  updateDomProperties(dom, [], fiber.props);
+  return dom;
+}
+
+function updateHostComponent(wipFiber) {
+  const dom = wipFiber.stateNode;
+  if (!dom) {
+    wipFiber.stateNode = createDomElement(wipFiber);
   }
-  // create fiber for fiber's children
-  reconcileChildren(fiber, fiber.props.children);
+  const newChildElements = wipFiber.props.children;
+  reconcileChildrenArray(wipFiber, newChildElements);
+}
+
+// diff 单个 fiber
+// diff 该 fiber 的 children，并通过链表和 fiber 进行关联
+function performNextUnitOfWork(wipFiber) {
+  // 更新 fiber 根 children 之间建立链表
+  if (wipFiber.tag === CLASS_COMPONENT) {
+    updateClassComponent(wipFiber);
+  } else {
+    updateHostComponent(wipFiber);
+  }
+
+  // 返回下一个 fiber(next unit of work)
+  if (wipFiber.child) {
+    // 说明当前 wipFiber 是有 children 的
+    return wipFiber.child;
+  } else {
+    // 虽然 wipFiber 没有 children 但是它可能有 sibling
+    let unitOfWork = wipFiber;
+    while (unitOfWork) {
+      // 一个 child work diff 完成因为它没有 children 可以
+      // diff 了
+      completeWork(unitOfWork);
+      // child -> sibling -> uncle(child.parent.sibling)
+      if (unitOfWork.sibling) {
+        return unitOfWork.sibling;
+      } else {
+        // uncle
+        unitOfWork = unitOfWork.parent;
+        // 继续 loop parent.sibling
+      }
+    }
+  }
 }
 
 let nextUnitOfWork = null;
-let ENOUGH_TIME = 1;
+let currentRoot = null; // 上个 commit 的 fiber root
+let wipRoot = null; // 正在 diff 的 fiber root
+const updateQueue = []; // setState, render 等触发一个任务
+let pendingCommit = null; // 当前 diff 完成的 update
+const ENOUGH_TIME = 1; // milliseconds
+
+// Step3. 1
+// 如果当前没有任务的话 `nextUnitOfWork` 那么
+// 从 `updateQueue` dequeue 一个出来
+function kickStartWorkLoop() {
+  const update = updateQueue.shift();
+  if (!update) {
+    return;
+  }
+
+  const getFiberRoot = (_fiber) => {
+    let fiberRoot = _fiber;
+    while (fiberRoot.parent) {
+      fiberRoot = fiberRoot.parent;
+    }
+    return fiberRoot;
+  };
+
+  const root =
+    update.from === HOST_ROOT
+      ? currentRoot
+      : getFiberRoot(update.instance.__fiber); // traverse `.parent` 属性
+
+  if (update.from === HOST_ROOT) {
+    nextUnitOfWork = {
+      tag: HOST_ROOT, // commit phase 做判断的时候需要
+      stateNode: update.dom,
+      props: update.newProps,
+      alternate: root,
+    };
+  } else {
+    // component
+    // 将 update.partialState 拷到 intance.__fiber 身上
+    // 而不是直接在 setState 的时候直接更新 this.state
+    // 是因为我们可以在后面 diff 的时候看 this.state
+    // 和 update.partialState 对比，看是否需要重新渲染
+    // 来做一个优化，毕竟只有 props 或者 state 改变了才会重新渲染
+    update.instance.__fiber.partialState = update.partialState;
+
+    nextUnitOfWork = {
+      tag: HOST_ROOT, // commit phase 做判断的时候需要
+      stateNode: root.stateNode,
+      props: root.props,
+      alternate: root,
+    };
+  }
+}
+
+function commitDeletion(fiber, domParent) {
+  let node = fiber;
+  while (true) {
+    // 因为 fiber 是链表结构的
+    // 所以 fiber 如果是组件的话 需要.chlid -> .sibling -> uncle(.parent.sibling) 的删除
+
+    // fiber -> child -> sibling -> sibling
+    // ↓  ↓----------parent-------------⏎
+    // sibling -> child -> sibling
+    if (node.tag == CLASS_COMPONENT) {
+      node = node.child;
+      continue;
+    }
+    domParent.removeChild(node.stateNode);
+    while (node != fiber && !node.sibling) {
+      node = node.parent;
+    }
+    if (node == fiber) {
+      return;
+    }
+    node = node.sibling;
+  }
+}
+
+// 打了 effectTag 的 fiber 就是一个 effect
+const commitWork = (fiber) => {
+  let parentFiber = fiber.parent;
+
+  // 如果是组件的话，那么得 traverse parent
+  // 找到一个 HOST_COMPONENT，也就是 dom 元素
+  if (parentFiber.tag === CLASS_COMPONENT) {
+    while (parentFiber.tag === CLASS_COMPONENT) {
+      parentFiber = parentFiber.parent;
+    }
+  }
+
+  const parentDom = parentFiber.stateNode;
+  if (fiber.effectTag === PLACEMENT) {
+    if (fiber.tag === HOST_COMPONENT) {
+      parentDom.appendChild(fiber.stateNode);
+    }
+  } else if (fiber.effectTag === UPDATE) {
+    updateDomProperties(fiber.stateNode, fiber.alternate.props, fiber.props);
+  } else if (fiber.effectTag === DELETION) {
+    commitDeletion(fiber, parentDom);
+  }
+};
+
+function commitAllWork(fiber) {
+  fiber.effects.forEach((effect) => commitWork(effect));
+
+  currentRoot = fiber;
+  nextUnitOfWork = null;
+  pendingCommit = null;
+}
+
 function workLoop(deadline) {
+  // 如果没有任务，那么从 updateQueue 中取一个出来
+  if (!nextUnitOfWork) {
+    kickStartWorkLoop();
+  }
+
+  // 是否应该产出任务来继续下一个任务的 diff
   let shouldYield = true;
   while (nextUnitOfWork && shouldYield) {
-    // 执行一个任务并返回下一个任务
     nextUnitOfWork = performNextUnitOfWork(nextUnitOfWork);
     shouldYield = deadline.timeRemaining() > ENOUGH_TIME;
   }
-  requestIdleCallback(workLoop);
+
+  // Render phase 结束：所有 update 的 diff 都已完成
+  // 进入 Commit phase
+  if (pendingCommit) {
+    commitAllWork(pendingCommit);
+  }
+}
+
+// 用来清空 updateQueue 的
+function performWork(deadline) {
+  // Step3: 渐进式 diff
+  workLoop(deadline);
+
+  const isCurrentUpdateNotFinished = nextUnitOfWork;
+  const haveMoreUpdateInTheQueue = updateQueue.length > 0;
+  if (isCurrentUpdateNotFinished || haveMoreUpdateInTheQueue) {
+    // 继续调用 workLoop 进行 diff
+    requestIdleCallback(performWork);
+  }
+}
+
+function scheduleUpdate(instance, partialState) {
+  updateQueue.push({
+    from: CLASS_COMPONENT,
+    instance,
+    partialState,
+  });
+
+  requestIdleCallback(performWork);
 }
 
 class Component {
@@ -224,50 +417,59 @@ class Component {
   }
 
   setState(partialState) {
-    this.state = { ...this.state, ...partialState };
-    // re-render and patch dom
-    const componentVnodeInstance = this.__internalInstance;
-    const parentDom = componentVnodeInstance.dom.parentNode;
-    const element = componentVnodeInstance.element;
-    reconcile(parentDom, componentVnodeInstance, element);
+    scheduleUpdate(this, partialState);
   }
 }
 
 // 实例化组件
-function createComponentInstance(
-  element,
-  internalInstance // vnode 对应的实例，不是组件实例，我们需要获取 vnode 对应的实例身上的 `dom` 属性方便 patch
-) {
-  // 自定义 element 的话实例化组件
-  const { type, props } = element;
+function createComponentInstance(fiber) {
+  const { type, props } = fiber;
   const componentInstance = new type(props);
-  componentInstance.__internalInstance = internalInstance;
+  componentInstance.__fiber = fiber;
   return componentInstance;
 }
 
-let wipRoot = null; // diff 中的 fiber tree
-let currentRoot = null; // 上个已经渲染到 dom 中的 fiber tree
+const HOST_COMPONENT = "host";
+const CLASS_COMPONENT = "class";
+const HOST_ROOT = "root";
+
+// 更新的话 都是 fiber 和 element 进行对比
 function render(element, parentDom) {
-  wipRoot = {
+  // Step1: queue 一个 update
+  updateQueue.push({
+    from: HOST_ROOT,
     dom: parentDom,
-    props: {
-      children: [element]
+    newProps: {
+      children: [element],
     },
-    alternate: currentRoot // TODO: 什么用
-  }
-  nextUnitOfWork = wipRoot;
+  });
+
+  // Step2: diff 一个 update
+  // 一个 update 会有很多 fiber 的 diff
+  // 一个 fiber 的 diff 是一个 work
+  requestIdleCallback(performWork);
 }
-// 用 Didact.render 的时候，直接跑 diff 
+// 用 Didact.render 的时候，直接跑 diff
 requestIdleCallback(workLoop);
 
 const Didact = { createElement, render, Component };
-
+class Innter extends Didact.Component {
+  render() {
+    return (
+      <div>
+        <span>1</span>
+        <span>2</span>
+      </div>
+    );
+  }
+}
 class Counter extends Didact.Component {
   state = { count: 1 };
   render() {
     return (
       <div>
         {this.state.count}
+        {this.state.count === 1 && <Innter />}
         <button
           onClick={() => {
             this.setState({ count: this.state.count + 1 });
@@ -281,25 +483,5 @@ class Counter extends Didact.Component {
 }
 
 const rootDom = document.getElementById("root");
-function tick() {
-  const time = new Date().toLocaleTimeString();
-  const clockElement = (
-    <div>
-      <span>Date: </span>
-      <h1>{time}</h1>
-      <Counter />
-    </div>
-  );
-
-  // 之前在做 partial diff 的时候，我们的 `element`(vnode) 不够用了
-  // 于是我们引入的 `instance` 的概念，而现在同样我们做**可暂停**的 partial diff
-  // 我们引入了 `fiber`，它也仅仅是一个 js 对象而已，只是上面的字段不同，引入 `fiber`
-  // 的原因也很简单，之前的 `instance` js 对象只能做不可打断的递归 diff
-  // （也叫 stack reconcilation），这样类似对帧数要求很高的动画性能就会有所提升
-  // 接下来听我慢慢道来
-
-  render(clockElement, rootDom);
-}
-
-tick();
-// setInterval(tick, 1000);
+const clockElement = <Counter />;
+render(clockElement, rootDom);

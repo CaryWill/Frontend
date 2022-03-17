@@ -1,7 +1,7 @@
-// @jsx Didact.createElement
+// @jsx Reactish.createElement
 // NOTE: 上面这一行告诉 Babel 使用我们定义的 `createElement` 来创建 vnode(element)
 // 参考文章：
-// 1. https://engineering.hexacta.com/didact-instances-reconciliation-and-virtual-dom-9316d650f1d0
+// 1. https://engineering.hexacta.com/Reactish-instances-reconciliation-and-virtual-dom-9316d650f1d0
 // 2. https://codepen.io/carywill/pen/Exojaeg?editors=0010
 // fiber
 // let fiber = {
@@ -444,30 +444,30 @@ function render(element, parentDom) {
   // 一个 fiber 的 diff 是一个 work
 
   requestIdleCallback(performWork);
-} // 用 Didact.render 的时候，直接跑 diff
+} // 用 Reactish.render 的时候，直接跑 diff
 
 
 requestIdleCallback(workLoop);
-const Didact = {
+const Reactish = {
   createElement,
   render,
   Component
 };
 
-class Innter extends Didact.Component {
+class Innter extends Reactish.Component {
   render() {
-    return Didact.createElement("div", null, Didact.createElement("span", null, "1"), Didact.createElement("span", null, "2"));
+    return Reactish.createElement("div", null, Reactish.createElement("span", null, "1"), Reactish.createElement("span", null, "2"));
   }
 
 }
 
-class Counter extends Didact.Component {
+class Counter extends Reactish.Component {
   state = {
     count: 1
   };
 
   render() {
-    return Didact.createElement("div", null, this.state.count, this.state.count === 1 && Didact.createElement(Innter, null), Didact.createElement("button", {
+    return Reactish.createElement("div", null, this.state.count, this.state.count === 1 && Reactish.createElement(Innter, null), Reactish.createElement("button", {
       onClick: () => {
         this.setState({
           count: this.state.count + 1
@@ -478,6 +478,159 @@ class Counter extends Didact.Component {
 
 }
 
+var Didact = {
+  createElement,
+  Component,
+  render
+};
 const rootDom = document.getElementById("root");
-const clockElement = Didact.createElement(Counter, null);
+const clockElement = Reactish.createElement(Counter, null);
 render(clockElement, rootDom);
+/** @jsx Reactish.createElement */
+
+function using(Reactish) {
+  class Cell extends Reactish.Component {
+    render() {
+      var _props = this.props,
+          text = _props.text,
+          delay = _props.delay;
+      wait(delay);
+      return Reactish.createElement("td", null, text);
+    }
+
+  }
+
+  class Demo extends Reactish.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        elapsed: 0,
+        // the number shown on each Cell
+        size: 6,
+        // the size of a row
+        period: 1000,
+        // the time (in ms) between updates
+        delay: 3 // the delay (in ms) for the render of each Cell
+
+      };
+      this.changeDelay = this.changeDelay.bind(this);
+      this.changePeriod = this.changePeriod.bind(this);
+      this.tick = this.tick.bind(this);
+      this.tick();
+    }
+
+    tick() {
+      var _this = this;
+
+      setTimeout(function () {
+        _this.setState({
+          elapsed: _this.state.elapsed + 1
+        });
+
+        _this.tick();
+      }, this.state.period);
+    }
+
+    changeDelay(e) {
+      this.setState({
+        delay: +e.target.value
+      });
+    }
+
+    changePeriod(e) {
+      this.setState({
+        period: +e.target.value
+      });
+    }
+
+    render() {
+      var _state = this.state,
+          elapsed = _state.elapsed,
+          size = _state.size,
+          delay = _state.delay,
+          period = _state.period;
+      var text = elapsed % 10;
+      var array = Array(size).fill();
+      var row = array.map(function (x, key) {
+        return Reactish.createElement(Cell, {
+          key: key,
+          text: text,
+          delay: delay
+        });
+      });
+      var rows = array.map(function (x, key) {
+        return Reactish.createElement("tr", {
+          key: key
+        }, row);
+      });
+      return Reactish.createElement("div", {
+        style: {
+          display: "flex"
+        }
+      }, Reactish.createElement("table", null, Reactish.createElement("tbody", null, rows)), Reactish.createElement("div", null, Reactish.createElement("p", null, "The table refreshes every ", Reactish.createElement("b", null, Math.round(period)), "ms"), Reactish.createElement("input", {
+        id: "period-range",
+        type: "range",
+        min: "200",
+        max: "1000",
+        step: "any",
+        value: period,
+        onChange: this.changePeriod
+      }), Reactish.createElement("p", null, "The render of each cell takes ", Reactish.createElement("b", null, delay.toFixed(2)), "ms"), Reactish.createElement("input", {
+        id: "delay-range",
+        type: "range",
+        min: "0",
+        max: "10",
+        step: "any",
+        value: delay,
+        onChange: this.changeDelay
+      }), Reactish.createElement("p", null, "So, sync rendering the full table will keep the main thread busy for ", Reactish.createElement("b", null, (delay * size * size).toFixed(2)), "ms")));
+    }
+
+  }
+
+  return Demo;
+}
+
+function wait(ms) {
+  var start = performance.now();
+
+  while (performance.now() - start < ms) {}
+}
+
+(function () {
+  var frames = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 150;
+  var colWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "2px";
+  var container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.right = "10px";
+  container.style.top = "0";
+  container.style.zIndex = "99999";
+
+  for (var _i = 0; _i < frames; _i++) {
+    var fc = document.createElement("div");
+    fc.style.background = "red";
+    fc.style.width = colWidth;
+    fc.style.display = "inline-block";
+    fc.style.verticalAlign = "top";
+    fc.style.opacity = "0.8";
+    container.appendChild(fc);
+    fc.style.height = "16px";
+  }
+
+  var last = performance.now();
+  var i = 0;
+
+  function refresh() {
+    var now = performance.now();
+    var diff = now - last;
+    last = now;
+    container.childNodes[i % frames].style.background = "red";
+    i++;
+    container.childNodes[i % frames].style.background = "black";
+    container.childNodes[i % frames].style.height = diff + "px";
+    requestAnimationFrame(refresh);
+  }
+
+  requestAnimationFrame(refresh);
+  document.body.appendChild(container);
+})();
