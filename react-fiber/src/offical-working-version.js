@@ -1,7 +1,3 @@
-// https://pomber.github.io/incremental-rendering-demo/didact.bundle.js?19b2eab298e44d7e7856
-// https://pomber.github.io/incremental-rendering-demo/didact.html
-// https://codepen.io/yashbhardwaj/pen/wvzzeV
-/** @jsx Didact.createElement */
 const TEXT_ELEMENT = "TEXT ELEMENT";
 
 function createElement(type, config, ...args) {
@@ -9,8 +5,8 @@ function createElement(type, config, ...args) {
   const hasChildren = args.length > 0;
   const rawChildren = hasChildren ? [].concat(...args) : [];
   props.children = rawChildren
-    .filter(c => c != null && c !== false)
-    .map(c => c instanceof Object ? c : createTextElement(c));
+    .filter((c) => c != null && c !== false)
+    .map((c) => (c instanceof Object ? c : createTextElement(c)));
   return { type, props };
 }
 
@@ -18,18 +14,18 @@ function createTextElement(value) {
   return createElement(TEXT_ELEMENT, { nodeValue: value });
 }
 
-const isEvent = name => name.startsWith("on");
-const isAttribute = name =>
+const isEvent = (name) => name.startsWith("on");
+const isAttribute = (name) =>
   !isEvent(name) && name != "children" && name != "style";
-const isNew = (prev, next) => key => prev[key] !== next[key];
-const isGone = (prev, next) => key => !(key in next);
+const isNew = (prev, next) => (key) => prev[key] !== next[key];
+const isGone = (prev, next) => (key) => !(key in next);
 
 function updateDomProperties(dom, prevProps, nextProps) {
   // Remove event listeners
   Object.keys(prevProps)
     .filter(isEvent)
-    .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key))
-    .forEach(name => {
+    .filter((key) => !(key in nextProps) || isNew(prevProps, nextProps)(key))
+    .forEach((name) => {
       const eventType = name.toLowerCase().substring(2);
       dom.removeEventListener(eventType, prevProps[name]);
     });
@@ -38,7 +34,7 @@ function updateDomProperties(dom, prevProps, nextProps) {
   Object.keys(prevProps)
     .filter(isAttribute)
     .filter(isGone(prevProps, nextProps))
-    .forEach(name => {
+    .forEach((name) => {
       dom[name] = null;
     });
 
@@ -46,7 +42,7 @@ function updateDomProperties(dom, prevProps, nextProps) {
   Object.keys(nextProps)
     .filter(isAttribute)
     .filter(isNew(prevProps, nextProps))
-    .forEach(name => {
+    .forEach((name) => {
       dom[name] = nextProps[name];
     });
 
@@ -55,12 +51,12 @@ function updateDomProperties(dom, prevProps, nextProps) {
   nextProps.style = nextProps.style || {};
   Object.keys(nextProps.style)
     .filter(isNew(prevProps.style, nextProps.style))
-    .forEach(key => {
+    .forEach((key) => {
       dom.style[key] = nextProps.style[key];
     });
   Object.keys(prevProps.style)
     .filter(isGone(prevProps.style, nextProps.style))
-    .forEach(key => {
+    .forEach((key) => {
       dom.style[key] = "";
     });
 
@@ -68,7 +64,7 @@ function updateDomProperties(dom, prevProps, nextProps) {
   Object.keys(nextProps)
     .filter(isEvent)
     .filter(isNew(prevProps, nextProps))
-    .forEach(name => {
+    .forEach((name) => {
       const eventType = name.toLowerCase().substring(2);
       dom.addEventListener(eventType, nextProps[name]);
     });
@@ -104,7 +100,7 @@ function render(elements, containerDom) {
   updateQueue.push({
     from: HOST_ROOT,
     dom: containerDom,
-    newProps: { children: elements }
+    newProps: { children: elements },
   });
   requestIdleCallback(performWork);
 }
@@ -113,7 +109,7 @@ function scheduleUpdate(instance, partialState) {
   updateQueue.push({
     from: CLASS_COMPONENT,
     instance: instance,
-    partialState: partialState
+    partialState: partialState,
   });
   requestIdleCallback(performWork);
 }
@@ -157,7 +153,7 @@ function resetNextUnitOfWork() {
     tag: HOST_ROOT,
     stateNode: update.dom || root.stateNode,
     props: update.newProps || root.props,
-    alternate: root
+    alternate: root,
   };
 }
 
@@ -247,7 +243,7 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
         parent: wipFiber,
         alternate: oldFiber,
         partialState: oldFiber.partialState,
-        effectTag: UPDATE
+        effectTag: UPDATE,
       };
     }
 
@@ -258,7 +254,7 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           typeof element.type === "string" ? HOST_COMPONENT : CLASS_COMPONENT,
         props: element.props,
         parent: wipFiber,
-        effectTag: PLACEMENT
+        effectTag: PLACEMENT,
       };
     }
 
@@ -298,7 +294,7 @@ function cloneChildFibers(parentFiber) {
       props: oldChild.props,
       partialState: oldChild.partialState,
       alternate: oldChild,
-      parent: parentFiber
+      parent: parentFiber,
     };
     if (prevChild) {
       prevChild.sibling = newChild;
@@ -326,7 +322,7 @@ function completeWork(fiber) {
 }
 
 function commitAllWork(fiber) {
-  fiber.effects.forEach(f => {
+  fiber.effects.forEach((f) => {
     commitWork(f);
   });
   fiber.stateNode._rootContainerFiber = fiber;
@@ -389,192 +385,8 @@ function createInstance(fiber) {
   return instance;
 }
 
-var Didact = {
+var didact = {
   createElement,
   Component,
-  render
+  render,
 };
-
-
-class Cell extends Didact.Component {
-  render() {
-    var _props = this.props,
-        text = _props.text,
-        delay = _props.delay;
-
-    wait(delay);
-    return Didact.createElement(
-      "td",
-      null,
-      text
-    );
-  }
-}
-
-class Demo extends Didact.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      elapsed: 0, // the number shown on each Cell
-      size: 6, // the size of a row
-      period: 1000, // the time (in ms) between updates
-      delay: 3 // the delay (in ms) for the render of each Cell
-    };
-    this.changeDelay = this.changeDelay.bind(this);
-    this.changePeriod = this.changePeriod.bind(this);
-    this.tick = this.tick.bind(this);
-    this.tick();
-  }
-  tick() {
-    var _this = this;
-
-    setTimeout(function () {
-      _this.setState({ elapsed: _this.state.elapsed + 1 });
-      _this.tick();
-    }, this.state.period);
-  }
-  changeDelay(e) {
-    this.setState({ delay: +e.target.value });
-  }
-  changePeriod(e) {
-    this.setState({ period: +e.target.value });
-  }
-  render() {
-    var _state = this.state,
-        elapsed = _state.elapsed,
-        size = _state.size,
-        delay = _state.delay,
-        period = _state.period;
-
-    var text = elapsed % 10;
-    var array = Array(size).fill();
-    var row = array.map(function (x, key) {
-      return Didact.createElement(Cell, { key: key, text: text, delay: delay });
-    });
-    var rows = array.map(function (x, key) {
-      return Didact.createElement(
-        "tr",
-        { key: key },
-        row
-      );
-    });
-    return Didact.createElement(
-      "div",
-      { style: { display: "flex" } },
-      Didact.createElement(
-        "table",
-        null,
-        Didact.createElement(
-          "tbody",
-          null,
-          rows
-        )
-      ),
-      Didact.createElement(
-        "div",
-        null,
-        Didact.createElement(
-          "p",
-          null,
-          "The table refreshes every ",
-          Didact.createElement(
-            "b",
-            null,
-            Math.round(period)
-          ),
-          "ms"
-        ),
-        Didact.createElement("input", {
-          id: "period-range",
-          type: "range",
-          min: "200",
-          max: "1000",
-          step: "any",
-          value: period,
-          onChange: this.changePeriod
-        }),
-        Didact.createElement(
-          "p",
-          null,
-          "The render of each cell takes ",
-          Didact.createElement(
-            "b",
-            null,
-            delay.toFixed(2)
-          ),
-          "ms"
-        ),
-        Didact.createElement("input", {
-          id: "delay-range",
-          type: "range",
-          min: "0",
-          max: "10",
-          step: "any",
-          value: delay,
-          onChange: this.changeDelay
-        }),
-        Didact.createElement(
-          "p",
-          null,
-          "So, sync rendering the full table will keep the main thread busy for ",
-          Didact.createElement(
-            "b",
-            null,
-            (delay * size * size).toFixed(2)
-          ),
-          "ms"
-        )
-      )
-    );
-  }
-}
-
-
-
-
-function wait(ms) {
-  var start = performance.now();
-
-  while (performance.now() - start < ms) {}
-}
-
-(function () {
-  var frames = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 150;
-  var colWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "2px";
-  var container = document.createElement("div");
-  container.style.position = "fixed";
-  container.style.right = "10px";
-  container.style.top = "0";
-  container.style.zIndex = "99999";
-
-  for (var _i = 0; _i < frames; _i++) {
-    var fc = document.createElement("div");
-    fc.style.background = "red";
-    fc.style.width = colWidth;
-    fc.style.display = "inline-block";
-    fc.style.verticalAlign = "top";
-    fc.style.opacity = "0.8";
-    container.appendChild(fc);
-    fc.style.height = "16px";
-  }
-
-  var last = performance.now();
-  var i = 0;
-
-  function refresh() {
-    var now = performance.now();
-    var diff = now - last;
-    last = now;
-    container.childNodes[i % frames].style.background = "red";
-    i++;
-    container.childNodes[i % frames].style.background = "black";
-    container.childNodes[i % frames].style.height = diff + "px";
-    requestAnimationFrame(refresh);
-  }
-
-  requestAnimationFrame(refresh);
-  document.body.appendChild(container);
-})();
-
-const rootDom = document.getElementById("root");
-render(<Demo />, rootDom);
