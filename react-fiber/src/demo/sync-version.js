@@ -20,12 +20,11 @@ function createElement(type, _props, ..._children) {
   // 比如，<div>123</div> 会转成下面的
   // React.createElement("div", null, "123")
   // 比如，<div>123<div>345</div></div> 会转成下面的
-  // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
-  const rawChildren = _children;
+  // const ele = React.createElement("div", null, "123", React.createElement  const rawChildren = _children;
   // 支持 `render()` 返回数组
   // 正常多个 child 的话，会是 [{type: 'tr', props:{}},type: 'tr', props:{}}]
   // 但是返回数组的话就变成了，[[{type: 'tr', props:{}},type: 'tr', props:{}}]]
-  const _rawChildren = [].concat(...rawChildren);
+  const _rawChildren = [].concat(..._children);
   const children = _rawChildren.map(function normalize(child) {
     if (typeof child === "object") {
       // element
@@ -241,51 +240,160 @@ function render(element, parentDom) {
 }
 
 const Didact = { createElement, render, Component };
-
-class Counter extends Didact.Component {
-  state = { count: 1 };
+class Cell extends Didact.Component {
   render() {
-    return (
-      <div>
-        {this.state.count}
-        <button
-          onClick={() => {
-            this.setState({ count: this.state.count + 1 });
-          }}
-        >
-          click
-        </button>
-      </div>
+    var _props = this.props,
+      text = _props.text,
+      delay = _props.delay;
+
+    wait(delay);
+    return Didact.createElement("td", null, text);
+  }
+}
+
+class Demo extends Didact.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      elapsed: 0, // the number shown on each Cell
+      size: 6, // the size of a row
+      period: 1000, // the time (in ms) between updates
+      delay: 3, // the delay (in ms) for the render of each Cell
+    };
+    this.changeDelay = this.changeDelay.bind(this);
+    this.changePeriod = this.changePeriod.bind(this);
+    this.tick = this.tick.bind(this);
+    this.tick();
+  }
+  tick() {
+    var _this = this;
+
+    setTimeout(function () {
+      _this.setState({ elapsed: _this.state.elapsed + 1 });
+      _this.tick();
+    }, this.state.period);
+  }
+  changeDelay(e) {
+    this.setState({ delay: +e.target.value });
+  }
+  changePeriod(e) {
+    this.setState({ period: +e.target.value });
+  }
+  render() {
+    var _state = this.state,
+      elapsed = _state.elapsed,
+      size = _state.size,
+      delay = _state.delay,
+      period = _state.period;
+
+    var text = elapsed % 10;
+    var array = Array(size).fill();
+    var row = array.map(function (x, key) {
+      return Didact.createElement(Cell, { key: key, text: text, delay: delay });
+    });
+    var rows = array.map(function (x, key) {
+      return Didact.createElement("tr", { key: key }, row);
+    });
+    return Didact.createElement(
+      "div",
+      { style: { display: "flex" } },
+      Didact.createElement(
+        "table",
+        null,
+        Didact.createElement("tbody", null, rows)
+      ),
+      Didact.createElement(
+        "div",
+        null,
+        Didact.createElement(
+          "p",
+          null,
+          "The table refreshes every ",
+          Didact.createElement("b", null, Math.round(period)),
+          "ms"
+        ),
+        Didact.createElement("input", {
+          id: "period-range",
+          type: "range",
+          min: "200",
+          max: "1000",
+          step: "any",
+          value: period,
+          onChange: this.changePeriod,
+        }),
+        Didact.createElement(
+          "p",
+          null,
+          "The render of each cell takes ",
+          Didact.createElement("b", null, delay.toFixed(2)),
+          "ms"
+        ),
+        Didact.createElement("input", {
+          id: "delay-range",
+          type: "range",
+          min: "0",
+          max: "10",
+          step: "any",
+          value: delay,
+          onChange: this.changeDelay,
+        }),
+        Didact.createElement(
+          "p",
+          null,
+          "So, sync rendering the full table will keep the main thread busy for ",
+          Didact.createElement("b", null, (delay * size * size).toFixed(2)),
+          "ms"
+        )
+      )
     );
   }
 }
 
-const rootDom = document.getElementById("root");
-function tick() {
-  const time = new Date().toLocaleTimeString();
-  const clockElement = (
-    <div>
-      <span>Date: </span>
-      <h1>{time}</h1>
-      <Counter />
-    </div>
-  );
+function wait(ms) {
+  var start = performance.now();
 
-  // 之前的做法太暴力，没有 diff，每次渲染更新都是销毁重建 dom 性能较差
-  // 如果我们可以记录下上一个 vdom，这样我们可以比较旧的 vdom 和更新
-  // vnode（element）的时候生成的新的 vdom，找出需要更新的 vnode
-  // 然后对 dom 进行 patch，所以我们需要引入一个新的概念 **instance**
-  // 里面有和 dom 一一对应的 `element` 属性，方便 diff 新旧 vnode，
-  // 以及有和 element 一一对应的 `dom` 属性，方便直接 `dom.parentNode`
-  // 进行直接 patch dom，以及 `childInstances` 来表示 childVnodes
-  // 所对应的 instances。注意一下，这里的 instance 不是指组件的实例。
-  // 尽量复用 instance 将有助于减少对 dom 的修改从而提升性能
-
-  // (re)render
-  // 之前的做法还存在问题，
-  // diff 虽然做了，但是每次的 diff 都是全量的 diff
-  render(clockElement, rootDom);
+  while (performance.now() - start < ms) {}
 }
 
-tick();
-// setInterval(tick, 1000);
+(function () {
+  var frames =
+    arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 150;
+  var colWidth =
+    arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "2px";
+  var container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.right = "10px";
+  container.style.top = "0";
+  container.style.zIndex = "99999";
+
+  for (var _i = 0; _i < frames; _i++) {
+    var fc = document.createElement("div");
+    fc.style.background = "red";
+    fc.style.width = colWidth;
+    fc.style.display = "inline-block";
+    fc.style.verticalAlign = "top";
+    fc.style.opacity = "0.8";
+    container.appendChild(fc);
+    fc.style.height = "16px";
+  }
+
+  var last = performance.now();
+  var i = 0;
+
+  function refresh() {
+    var now = performance.now();
+    var diff = now - last;
+    last = now;
+    container.childNodes[i % frames].style.background = "red";
+    i++;
+    container.childNodes[i % frames].style.background = "black";
+    container.childNodes[i % frames].style.height = diff + "px";
+    requestAnimationFrame(refresh);
+  }
+
+  requestAnimationFrame(refresh);
+  document.body.appendChild(container);
+})();
+
+const rootDom = document.getElementById("root");
+render(<Demo />, rootDom);
