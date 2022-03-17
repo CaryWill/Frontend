@@ -233,15 +233,19 @@ function updateHostComponent(wipFiber) {
   reconcileChildrenArray(wipFiber, newChildElements);
 }
 
-// diff 单个 fiber
-// diff 该 fiber 的 children，并通过链表和 fiber 进行关联
-function performNextUnitOfWork(wipFiber) {
+function beginWork(wipFiber) {
   // 更新 fiber 根 children 之间建立链表
   if (wipFiber.tag === CLASS_COMPONENT) {
     updateClassComponent(wipFiber);
   } else {
     updateHostComponent(wipFiber);
   }
+}
+
+// diff 单个 fiber
+// diff 该 fiber 的 children，并通过链表和 fiber 进行关联
+function performNextUnitOfWork(wipFiber) {
+  beginWork(wipFiber);
 
   // 返回下一个 fiber(next unit of work)
   if (wipFiber.child) {
