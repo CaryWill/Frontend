@@ -1,5 +1,5 @@
 // @jsx Didact.createElement
-import { Didact } from "./new-fiber.js";
+import { Didact as React } from "./component-state.js";
 
 class Cell extends Didact.Component {
   render() {

@@ -20,7 +20,13 @@ function createElement(type, _props, ..._children) {
   // 比如，<div>123<div>345</div></div> 会转成下面的
   // const ele = React.createElement("div", null, "123", React.createElement("div", null, "345"));
 
-  const children = _children.map(function normalize(child) {
+  const rawChildren = _children; // 支持 `render()` 返回数组
+  // 正常多个 child 的话，会是 [{type: 'tr', props:{}},type: 'tr', props:{}}]
+  // 但是返回数组的话就变成了，[[{type: 'tr', props:{}},type: 'tr', props:{}}]]
+
+  const _rawChildren = [].concat(...rawChildren);
+
+  const children = _rawChildren.map(function normalize(child) {
     if (typeof child === "object") {
       // element
       return child;
@@ -234,7 +240,7 @@ function render(element, parentDom) {
   rootInstance = nextInstance;
 }
 
-const Didact = {
+export const Didact = {
   createElement,
   render,
   Component
@@ -275,6 +281,5 @@ function tick() {
   // diff 虽然做了，但是每次的 diff 都是全量的 diff
 
   render(clockElement, rootDom);
-}
-
-tick(); // setInterval(tick, 1000);
+} // tick();
+// setInterval(tick, 1000);

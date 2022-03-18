@@ -217,18 +217,21 @@ function updateHostComponent(wipFiber) {
 
   const newChildElements = wipFiber.props.children;
   reconcileChildrenArray(wipFiber, newChildElements);
-} // diff 单个 fiber
-// diff 该 fiber 的 children，并通过链表和 fiber 进行关联
+}
 
-
-function performNextUnitOfWork(wipFiber) {
+function beginWork(wipFiber) {
   // 更新 fiber 根 children 之间建立链表
   if (wipFiber.tag === CLASS_COMPONENT) {
     updateClassComponent(wipFiber);
   } else {
     updateHostComponent(wipFiber);
-  } // 返回下一个 fiber(next unit of work)
+  }
+} // diff 单个 fiber
+// diff 该 fiber 的 children，并通过链表和 fiber 进行关联
 
+
+function performNextUnitOfWork(wipFiber) {
+  beginWork(wipFiber); // 返回下一个 fiber(next unit of work)
 
   if (wipFiber.child) {
     // 说明当前 wipFiber 是有 children 的
@@ -457,7 +460,7 @@ function render(element, parentDom) {
 
 
 requestIdleCallback(workLoop);
-const Didact = {
+export const Didact = {
   createElement,
   render,
   Component

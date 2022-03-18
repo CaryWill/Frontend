@@ -240,7 +240,7 @@ function render(element, parentDom) {
   rootInstance = nextInstance;
 }
 
-const Didact = { createElement, render, Component };
+export const Didact = { createElement, render, Component };
 
 class Counter extends Didact.Component {
   state = { count: 1 };
@@ -287,5 +287,5 @@ function tick() {
   render(clockElement, rootDom);
 }
 
-tick();
+// tick();
 // setInterval(tick, 1000);

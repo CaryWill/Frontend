@@ -465,7 +465,7 @@ function render(element, parentDom) {
 // 用 Didact.render 的时候，直接跑 diff
 requestIdleCallback(workLoop);
 
-const Didact = { createElement, render, Component };
+export const Didact = { createElement, render, Component };
 class Innter extends Didact.Component {
   render() {
     return (
