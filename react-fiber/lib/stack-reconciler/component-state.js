@@ -166,7 +166,7 @@ function reconcile(parentDom, instance, element) {
   } else if (prevInstance.element.type !== element.type) {
     // 替换 prevInstance
     const newInstance = instantiate(element);
-    parentDom.replaceChild(newInstance.dom);
+    parentDom.replaceChild(newInstance.dom, instance.dom);
     return newInstance;
   } else if (typeof element.type === "string") {
     // 更新 prevInstance
@@ -281,5 +281,7 @@ function tick() {
   // diff 虽然做了，但是每次的 diff 都是全量的 diff
 
   render(clockElement, rootDom);
-} // tick();
-// setInterval(tick, 1000);
+}
+
+tick();
+setInterval(tick, 1000);

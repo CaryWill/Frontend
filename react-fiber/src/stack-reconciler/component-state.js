@@ -164,7 +164,7 @@ function reconcile(parentDom, instance, element) {
   } else if (prevInstance.element.type !== element.type) {
     // 替换 prevInstance
     const newInstance = instantiate(element);
-    parentDom.replaceChild(newInstance.dom);
+    parentDom.replaceChild(newInstance.dom, instance.dom);
     return newInstance;
   } else if (typeof element.type === "string") {
     // 更新 prevInstance

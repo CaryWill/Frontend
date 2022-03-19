@@ -9,8 +9,9 @@
 const TEXT_ELEMENT = "TEXT_ELEMENT"; // 构建 vnode
 
 function createElement(type, _props, ..._children) {
-  // props 如果为空的话 babel 会给你一个 null
+  console.log('test'); // props 如果为空的话 babel 会给你一个 null
   // 这里做下处理让 props 永远为 object
+
   const props = { ..._props
   }; // 入参里的 props 参数之后的所有参数都是 child element
   // 这里统一将那么 child element 整合到 `props.children`
@@ -90,7 +91,7 @@ function tick() {
 
   rootDom.replaceChildren(); // then rerender
 
-  render(Didact.createElement("div", null, Didact.createElement("span", null, "Date: "), Didact.createElement("h1", null, time)), document.getElementById("root"));
+  Didact.render(clockElement, rootDom);
 }
 
 tick();

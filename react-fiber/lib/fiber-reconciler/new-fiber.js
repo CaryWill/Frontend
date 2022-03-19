@@ -258,8 +258,6 @@ function performNextUnitOfWork(wipFiber) {
 let nextUnitOfWork = null;
 let currentRoot = null; // 上个 commit 的 fiber root
 
-let wipRoot = null; // 正在 diff 的 fiber root
-
 const updateQueue = []; // setState, render 等触发一个任务
 
 let pendingCommit = null; // 当前 diff 完成的 update
