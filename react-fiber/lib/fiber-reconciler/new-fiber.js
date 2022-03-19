@@ -173,7 +173,6 @@ function updateClassComponent(wipFiber) {
   wipFiber.partialState = null; // 根据新的 state 和 props 生成新的组件返回值（children）
 
   const newChildElements = wipFiber.stateNode.render(); // 为每一个 child 创建一个 fiber 并且和链表到 wipFiber
-  // TODO: 组件 `render` 函数暂时不支持返回数组
 
   reconcileChildrenArray(wipFiber, newChildElements);
 }
