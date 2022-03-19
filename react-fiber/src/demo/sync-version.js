@@ -1,5 +1,5 @@
 // @jsx Didact.createElement
-import { Didact } from "../component-state.js";
+import { Didact } from "../stack-reconciler/component-state.js";
 import './metrics.js';
 
 class Cell extends Didact.Component {

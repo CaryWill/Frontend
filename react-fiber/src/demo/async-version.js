@@ -1,5 +1,5 @@
 // @jsx Didact.createElement
-import { Didact } from "../new-fiber.js";
+import { Didact } from "../fiber-reconciler/new-fiber.js";
 import './metrics.js';
 
 class Cell extends Didact.Component {
