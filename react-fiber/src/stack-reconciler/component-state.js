@@ -287,5 +287,5 @@ function tick() {
   render(clockElement, rootDom);
 }
 
-// tick();
-// setInterval(tick, 1000);
+tick();
+setInterval(tick, 1000);
