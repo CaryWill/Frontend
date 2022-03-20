@@ -21,6 +21,8 @@ function createElement(type, _props, ..._children) {
 
   const _rawChildren = [].concat(...rawChildren);
 
+  console.log("a", _children, "b", _rawChildren.filter(c => c != null && c !== false));
+
   const children = _rawChildren.filter(c => c != null && c !== false) // null 和 false 值 不渲染
   .map(function normalize(child) {
     if (typeof child === "object") {
@@ -77,8 +79,7 @@ function reconcileChildren(fiber, newChildElements) {
   // 所以如果 elements[index] 有值，oldFiber 无值
   // 说明新增了 一些 elements，反之，删除了一些 elements
 
-  for (let index = 0; index < elements.length || oldFiber; oldFiber = oldFiber?.sibling, // 继续链表里的下一个 oldFiber
-  index++) {
+  for (let index = 0; index < elements.length || oldFiber; index++) {
     const element = elements[index];
     let newFiber = null;
     const sameType = oldFiber && element && oldFiber.type === element.type;
@@ -124,6 +125,11 @@ function reconcileChildren(fiber, newChildElements) {
       fiber.child = newFiber;
     } else if (element) {
       prevSibling.sibling = newFiber;
+    }
+
+    if (oldFiber) {
+      // 继续链表里的下一个 oldFiber
+      oldFiber = oldFiber.sibling;
     }
 
     prevSibling = newFiber;
@@ -182,6 +188,7 @@ function updateFunctionComponent(fiber) {
   // 只不过 function 组件需要调用下自己来生成最新的 children elements 再进行 diff
 
   const newChildElements = [fiber.type(fiber.props)];
+  console.log(newChildElements);
   reconcileChildren(fiber, newChildElements);
 } // 我们在 function 组件被初始化的时候，调用 useState 等 hooks
 // 我们可以直接拿到当前组件对应的 fiber 也就是全局变量 wipFiber 了
@@ -274,8 +281,23 @@ function commitDeletion(fiber, domParent) {
   // 我们之前调用了 commitWork 的时候
   // 是调用了 commitWork(child), commitWork(sibling)
   // 所以我们这里也递归删除就行了
+  if (!domParent) {
+    let parentFiber = fiber.parent;
+
+    const isComponent = f => f?.type instanceof Function;
+
+    while (isComponent(parentFiber)) {
+      parentFiber = parentFiber.parent;
+    }
+
+    return commitDeletion(fiber, parentFiber.stateNode);
+  }
+
   if (fiber.stateNode) {
-    domParent.removeChild(fiber.stateNode);
+    if (fiber?.type && typeof fiber?.type === "string") {
+      // try {
+      domParent.removeChild(fiber.stateNode); // } catch (error) {}
+    }
   } else {
     commitDeletion(fiber.child, domParent);
   }
@@ -317,7 +339,7 @@ function commitRoot() {
   // 因为我们是根据 wipRoot 的链表来处理带有 effectTag 的
   // fiber，所以 wipRoot 里是没有被删除了的 fiber node
   // 的，所以我们需要一个数组来保存这些需要被删除的 fiber nodes
-  deletions.forEach(commitWork); // 从第一个 child 开始 patch
+  deletions.forEach(fiber => commitDeletion(fiber)); // 从第一个 child 开始 patch
 
   commitWork(wipRoot.child); // patch 结束 wipRoot 变成 旧 fiber root
 
@@ -409,13 +431,13 @@ function render(element, container) {
       children: [element]
     },
     alternate: currentRoot
-  };
-  deletions = []; // 一个 fiber 的 diff 是一个 work
+  }; // 一个 fiber 的 diff 是一个 work
   // 我们设置了 nextUnitOfWork 就行了
   // 它会自动 diff，因为我们在 workLoop 函数里设置了
   // 无限 diff
 
   nextUnitOfWork = wipRoot;
+  deletions = [];
 } // 用 Didact.render 的时候，直接跑 diff
 
 

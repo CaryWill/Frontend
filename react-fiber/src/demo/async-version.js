@@ -117,13 +117,33 @@ function Counter() {
     <div>
       {count === 0 && <div>23</div>}
       <h1>Count: {count}</h1>
-      {/* <h1>State: {state}</h1> */}
       <div>
-        {/* <button onClick={() => setState((c) => c + 1)}>change state</button> */}
         <button onClick={() => setCount((c) => c + 1)}>change count</button>
       </div>
     </div>
   );
+}
+
+class App extends Didact.Component {
+  state = { count: 0 };
+  render() {
+    const { count } = this.state;
+    return (
+      <div>
+        {count === 0 && <div>23</div>}
+        <h1>Count: {count}</h1>
+        {/* <h1>State: {state}</h1> */}
+        {count === 0 && <div>23</div>}
+        <div>
+          {/* <button onClick={() => setState((c) => c + 1)}>change state</button> */}
+          <button onClick={() => this.setState({ count: count + 1 })}>
+            change count
+          </button>
+        </div>
+        {count === 0 && <div>23</div>}
+      </div>
+    );
+  }
 }
 
 const rootDom = document.getElementById("root");
