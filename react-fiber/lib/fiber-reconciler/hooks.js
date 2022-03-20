@@ -69,9 +69,9 @@ function updateDomProperties(dom, prevProps, nextProps) {
 } // Effect tags
 
 
-const PLACEMENT = 1;
-const DELETION = 2;
-const UPDATE = 3;
+const PLACEMENT = "PLACEMENT";
+const DELETION = "DELETION";
+const UPDATE = "UPDATE";
 
 function reconcileChildren(fiber, newChildElements) {
   const elements = Array.isArray(newChildElements) ? newChildElements : [newChildElements];
@@ -92,14 +92,14 @@ function reconcileChildren(fiber, newChildElements) {
       // 而且 element 身上只有 type 和 props 两个属性
       newFiber = {
         type: element.type,
-        stateNode: oldFiber.stateNode,
         props: element.props,
-        // 可能会有 children
+        // 会有 children
+        stateNode: oldFiber.stateNode,
         parent: fiber,
         alternate: oldFiber,
-        partialState: oldFiber.partialState,
-        // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
-        effectTag: UPDATE
+        effectTag: UPDATE,
+        partialState: oldFiber.partialState // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
+
       };
     } else {
       // 销毁新增或者只新增或者只销毁
@@ -182,8 +182,10 @@ function updateFunctionComponent(fiber) {
   // 我们将 hooks 保存到 fiber 上
   wipFiber = fiber;
   hookIndex = 0;
-  wipFiber = [];
-  const newChildElements = fiber.type(fiber.props);
+  wipFiber.hooks = []; // diff children 的话，还是一样
+  // 只不过 function 组件需要调用下自己来生成最新的 children elements 再进行 diff
+
+  const newChildElements = [fiber.type(fiber.props)];
   reconcileChildren(fiber, newChildElements);
 } // 我们在 function 组件被初始化的时候，调用 useState 等 hooks
 // 我们可以直接拿到当前组件对应的 fiber 也就是全局变量 wipFiber 了
@@ -201,12 +203,15 @@ function useState(initialState) {
   });
 
   const setState = action => {
-    hook.queue.push(action);
-    updateQueue.push({
-      dom: currentRoot.dom,
+    hook.queue.push(action); // 和 render(element, container) 一样的逻辑
+
+    wipRoot = {
+      stateNode: currentRoot.stateNode,
       props: currentRoot.props,
       alternate: currentRoot
-    });
+    };
+    nextUnitOfWork = wipFiber;
+    deletions = [];
   };
 
   wipFiber.hooks.push(hook);
@@ -258,8 +263,6 @@ function performUnitOfWork(fiber) {
 
 let nextUnitOfWork = null;
 let currentRoot = null; // 上个 commit 的 fiber root
-
-const updateQueue = []; // setState, render 等触发一个任务
 
 let wipRoot = null; // 当前 diff 完成的 fiber root
 
@@ -315,7 +318,9 @@ const commitWork = fiber => {
 };
 
 function commitRoot() {
-  //TODO: 需要 deletions 吗?
+  // 因为我们是根据 wipRoot 的链表来处理带有 effectTag 的
+  // fiber，所以 wipRoot 里是没有被删除了的 fiber node
+  // 的，所以我们需要一个数组来保存这些需要被删除的 fiber nodes
   deletions.forEach(commitWork); // 从第一个 child 开始 patch
 
   commitWork(wipRoot.child); // patch 结束 wipRoot 变成 旧 fiber root
@@ -408,8 +413,7 @@ function render(element, container) {
       children: [element]
     },
     alternate: currentRoot
-  }; // TODO: 话说 deletions 遍历真的需要吗
-
+  };
   deletions = []; // 一个 fiber 的 diff 是一个 work
   // 我们设置了 nextUnitOfWork 就行了
   // 它会自动 diff，因为我们在 workLoop 函数里设置了
@@ -426,40 +430,3 @@ export const Didact = {
   Component,
   useState
 };
-
-class Innter extends Didact.Component {
-  render() {
-    return Didact.createElement("div", null, Didact.createElement("span", null, "1"), Didact.createElement("span", null, "2"));
-  }
-
-}
-
-class Counter extends Didact.Component {
-  state = {
-    count: 1
-  };
-
-  render() {
-    return Didact.createElement("div", null, this.state.count, this.state.count === 1 && Didact.createElement(Innter, null), Didact.createElement("button", {
-      onClick: () => {
-        this.setState({
-          count: this.state.count + 1
-        });
-      }
-    }, "click"));
-  }
-
-} // function App() {
-//   const [count, setCount] = Didact.useState(0);
-//   return (
-//     <div>
-//       {count}
-//       <button onClick={() => setCount((c) => c + 1)}></button>
-//     </div>
-//   );
-// }
-
-
-const rootDom = document.getElementById("root");
-const clockElement = Didact.createElement(Counter, null);
-render(clockElement, rootDom);

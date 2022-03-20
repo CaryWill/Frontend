@@ -72,9 +72,6 @@ function updateDomProperties(dom, prevProps, nextProps) {
 }
 
 // Effect tags
-const PLACEMENT = 1;
-const DELETION = 2;
-const UPDATE = 3;
 function reconcileChildren(fiber, newChildElements) {
   const elements = Array.isArray(newChildElements)
     ? newChildElements
@@ -102,12 +99,12 @@ function reconcileChildren(fiber, newChildElements) {
       // 而且 element 身上只有 type 和 props 两个属性
       newFiber = {
         type: element.type,
+        props: element.props, // 会有 children
         stateNode: oldFiber.stateNode,
-        props: element.props, // 可能会有 children
         parent: fiber,
         alternate: oldFiber,
+        effectTag: "UPDATE",
         partialState: oldFiber.partialState, // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
-        effectTag: UPDATE,
       };
     } else {
       // 销毁新增或者只新增或者只销毁
@@ -117,7 +114,7 @@ function reconcileChildren(fiber, newChildElements) {
           type: element.type,
           props: element.props,
           parent: fiber,
-          effectTag: PLACEMENT,
+          effectTag: "PLACEMENT",
           stateNode: null,
           alternate: null,
         };
@@ -126,7 +123,7 @@ function reconcileChildren(fiber, newChildElements) {
       if (oldFiber) {
         // 删除
         // 注意这个是 旧的 fiber
-        oldFiber.effectTag = DELETION;
+        oldFiber.effectTag = "DELETION";
         deletions.push(oldFiber);
       }
     }
@@ -189,8 +186,11 @@ function updateFunctionComponent(fiber) {
   // 我们将 hooks 保存到 fiber 上
   wipFiber = fiber;
   hookIndex = 0;
-  wipFiber = [];
-  const newChildElements = fiber.type(fiber.props);
+  wipFiber.hooks = [];
+
+  // diff children 的话，还是一样
+  // 只不过 function 组件需要调用下自己来生成最新的 children elements 再进行 diff
+  const newChildElements = [fiber.type(fiber.props)];
   reconcileChildren(fiber, newChildElements);
 }
 
@@ -210,11 +210,14 @@ function useState(initialState) {
 
   const setState = (action) => {
     hook.queue.push(action);
-    updateQueue.push({
-      dom: currentRoot.dom,
+    // 和 render(element, container) 一样的逻辑
+    wipRoot = {
+      stateNode: currentRoot.stateNode,
       props: currentRoot.props,
       alternate: currentRoot,
-    });
+    };
+    nextUnitOfWork = wipFiber;
+    deletions = [];
   };
 
   wipFiber.hooks.push(hook);
@@ -266,7 +269,6 @@ function performUnitOfWork(fiber) {
 
 let nextUnitOfWork = null;
 let currentRoot = null; // 上个 commit 的 fiber root
-const updateQueue = []; // setState, render 等触发一个任务
 let wipRoot = null; // 当前 diff 完成的 fiber root
 let deletions = null;
 const ENOUGH_TIME = 1; // milliseconds
@@ -302,13 +304,13 @@ const commitWork = (fiber) => {
   }
 
   const parentDom = parentFiber.stateNode;
-  if (fiber.effectTag === PLACEMENT && fiber.stateNode) {
+  if (fiber.effectTag === "PLACEMENT" && fiber.stateNode) {
     if (!isComponent(fiber)) {
       parentDom.appendChild(fiber.stateNode);
     }
-  } else if (fiber.effectTag === UPDATE && fiber.stateNode) {
+  } else if (fiber.effectTag === "UPDATE" && fiber.stateNode) {
     updateDomProperties(fiber.stateNode, fiber.alternate.props, fiber.props);
-  } else if (fiber.effectTag === DELETION) {
+  } else if (fiber.effectTag === "DELETION") {
     commitDeletion(fiber, parentDom);
   }
 
@@ -321,7 +323,9 @@ const commitWork = (fiber) => {
 };
 
 function commitRoot() {
-  //TODO: 需要 deletions 吗?
+  // 因为我们是根据 wipRoot 的链表来处理带有 effectTag 的
+  // fiber，所以 wipRoot 里是没有被删除了的 fiber node
+  // 的，所以我们需要一个数组来保存这些需要被删除的 fiber nodes
   deletions.forEach(commitWork);
   // 从第一个 child 开始 patch
   commitWork(wipRoot.child);
@@ -408,7 +412,6 @@ function render(element, container) {
     },
     alternate: currentRoot,
   };
-  // TODO: 话说 deletions 遍历真的需要吗
   deletions = [];
   // 一个 fiber 的 diff 是一个 work
   // 我们设置了 nextUnitOfWork 就行了
@@ -420,45 +423,3 @@ function render(element, container) {
 requestIdleCallback(workLoop);
 
 export const Didact = { createElement, render, Component, useState };
-class Innter extends Didact.Component {
-  render() {
-    return (
-      <div>
-        <span>1</span>
-        <span>2</span>
-      </div>
-    );
-  }
-}
-class Counter extends Didact.Component {
-  state = { count: 1 };
-  render() {
-    return (
-      <div>
-        {this.state.count}
-        {this.state.count === 1 && <Innter />}
-        <button
-          onClick={() => {
-            this.setState({ count: this.state.count + 1 });
-          }}
-        >
-          click
-        </button>
-      </div>
-    );
-  }
-}
-
-// function App() {
-//   const [count, setCount] = Didact.useState(0);
-//   return (
-//     <div>
-//       {count}
-//       <button onClick={() => setCount((c) => c + 1)}></button>
-//     </div>
-//   );
-// }
-
-const rootDom = document.getElementById("root");
-const clockElement = <Counter />;
-render(clockElement, rootDom);

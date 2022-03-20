@@ -110,5 +110,17 @@ function wait(ms) {
   while (performance.now() - start < ms) {}
 }
 
+function Counter() {
+  // const [state, setState] = Didact.useState(1);
+  const [count, setCount] = Didact.useState(0);
+  return (
+    <h1 style="user-select: none">
+      Count: {count}
+      <button onClick={() => setCount((c) => c + 1)}>click2</button>
+    </h1>
+  );
+}
+
 const rootDom = document.getElementById("root");
-Didact.render(<Demo />, rootDom);
+// Didact.render(<Demo />, rootDom);
+Didact.render(<Counter />, rootDom);
