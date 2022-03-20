@@ -69,10 +69,6 @@ function updateDomProperties(dom, prevProps, nextProps) {
 } // Effect tags
 
 
-const PLACEMENT = "PLACEMENT";
-const DELETION = "DELETION";
-const UPDATE = "UPDATE";
-
 function reconcileChildren(fiber, newChildElements) {
   const elements = Array.isArray(newChildElements) ? newChildElements : [newChildElements];
   let oldFiber = fiber.alternate?.child;
@@ -97,7 +93,7 @@ function reconcileChildren(fiber, newChildElements) {
         stateNode: oldFiber.stateNode,
         parent: fiber,
         alternate: oldFiber,
-        effectTag: UPDATE,
+        effectTag: "UPDATE",
         partialState: oldFiber.partialState // 还记得我们在 scheduleUpdate 的时候拷贝的 partialState 吗
 
       };
@@ -109,7 +105,7 @@ function reconcileChildren(fiber, newChildElements) {
           type: element.type,
           props: element.props,
           parent: fiber,
-          effectTag: PLACEMENT,
+          effectTag: "PLACEMENT",
           stateNode: null,
           alternate: null
         };
@@ -118,7 +114,7 @@ function reconcileChildren(fiber, newChildElements) {
       if (oldFiber) {
         // 删除
         // 注意这个是 旧的 fiber
-        oldFiber.effectTag = DELETION;
+        oldFiber.effectTag = "DELETION";
         deletions.push(oldFiber);
       }
     } // 将 newFiber 关联到 wipFiber 上建立链表
@@ -210,7 +206,7 @@ function useState(initialState) {
       props: currentRoot.props,
       alternate: currentRoot
     };
-    nextUnitOfWork = wipFiber;
+    nextUnitOfWork = wipRoot;
     deletions = [];
   };
 
@@ -299,13 +295,13 @@ const commitWork = fiber => {
 
   const parentDom = parentFiber.stateNode;
 
-  if (fiber.effectTag === PLACEMENT && fiber.stateNode) {
+  if (fiber.effectTag === "PLACEMENT" && fiber.stateNode) {
     if (!isComponent(fiber)) {
       parentDom.appendChild(fiber.stateNode);
     }
-  } else if (fiber.effectTag === UPDATE && fiber.stateNode) {
+  } else if (fiber.effectTag === "UPDATE" && fiber.stateNode) {
     updateDomProperties(fiber.stateNode, fiber.alternate.props, fiber.props);
-  } else if (fiber.effectTag === DELETION) {
+  } else if (fiber.effectTag === "DELETION") {
     commitDeletion(fiber, parentDom);
   } // 递归 fiber 的 child 和 sibling
   // 所以当 child 或 sibling 没有的话 我们直接 return 了

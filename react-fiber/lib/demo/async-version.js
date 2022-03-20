@@ -103,11 +103,9 @@ function wait(ms) {
 function Counter() {
   // const [state, setState] = Didact.useState(1);
   const [count, setCount] = Didact.useState(0);
-  return Didact.createElement("h1", {
-    style: "user-select: none"
-  }, "Count: ", count, Didact.createElement("button", {
+  return Didact.createElement("div", null, count === 0 && Didact.createElement("div", null, "23"), Didact.createElement("h1", null, "Count: ", count), Didact.createElement("div", null, Didact.createElement("button", {
     onClick: () => setCount(c => c + 1)
-  }, "click2"));
+  }, "change count")));
 }
 
 const rootDom = document.getElementById("root"); // Didact.render(<Demo />, rootDom);

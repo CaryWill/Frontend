@@ -216,7 +216,7 @@ function useState(initialState) {
       props: currentRoot.props,
       alternate: currentRoot,
     };
-    nextUnitOfWork = wipFiber;
+    nextUnitOfWork = wipRoot;
     deletions = [];
   };
 

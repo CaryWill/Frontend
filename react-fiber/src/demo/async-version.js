@@ -114,10 +114,15 @@ function Counter() {
   // const [state, setState] = Didact.useState(1);
   const [count, setCount] = Didact.useState(0);
   return (
-    <h1 style="user-select: none">
-      Count: {count}
-      <button onClick={() => setCount((c) => c + 1)}>click2</button>
-    </h1>
+    <div>
+      {count === 0 && <div>23</div>}
+      <h1>Count: {count}</h1>
+      {/* <h1>State: {state}</h1> */}
+      <div>
+        {/* <button onClick={() => setState((c) => c + 1)}>change state</button> */}
+        <button onClick={() => setCount((c) => c + 1)}>change count</button>
+      </div>
+    </div>
   );
 }
 
