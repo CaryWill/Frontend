@@ -100,13 +100,5 @@ function wait(ms) {
   while (performance.now() - start < ms) {}
 }
 
-function Counter() {
-  const [count, setCount] = Didact.useState(0);
-  return Didact.createElement("div", null, count === 0 && Didact.createElement("div", null, "23"), Didact.createElement("h1", null, "Count: ", count), Didact.createElement("div", null, Didact.createElement("button", {
-    onClick: () => setCount(c => c + 1)
-  }, "change count")));
-}
-
 const rootDom = document.getElementById("root");
 Didact.render(Didact.createElement(Demo, null), rootDom);
-Didact.render(Didact.createElement(Counter, null), rootDom);

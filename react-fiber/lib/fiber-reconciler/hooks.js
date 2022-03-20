@@ -21,8 +21,6 @@ function createElement(type, _props, ..._children) {
 
   const _rawChildren = [].concat(...rawChildren);
 
-  console.log("a", _children, "b", _rawChildren.filter(c => c != null && c !== false));
-
   const children = _rawChildren.filter(c => c != null && c !== false) // null 和 false 值 不渲染
   .map(function normalize(child) {
     if (typeof child === "object") {
@@ -188,7 +186,6 @@ function updateFunctionComponent(fiber) {
   // 只不过 function 组件需要调用下自己来生成最新的 children elements 再进行 diff
 
   const newChildElements = [fiber.type(fiber.props)];
-  console.log(newChildElements);
   reconcileChildren(fiber, newChildElements);
 } // 我们在 function 组件被初始化的时候，调用 useState 等 hooks
 // 我们可以直接拿到当前组件对应的 fiber 也就是全局变量 wipFiber 了

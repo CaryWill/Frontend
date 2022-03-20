@@ -110,19 +110,5 @@ function wait(ms) {
   while (performance.now() - start < ms) {}
 }
 
-function Counter() {
-  const [count, setCount] = Didact.useState(0);
-  return (
-    <div>
-      {count === 0 && <div>23</div>}
-      <h1>Count: {count}</h1>
-      <div>
-        <button onClick={() => setCount((c) => c + 1)}>change count</button>
-      </div>
-    </div>
-  );
-}
-
 const rootDom = document.getElementById("root");
 Didact.render(<Demo />, rootDom);
-Didact.render(<Counter />, rootDom);
