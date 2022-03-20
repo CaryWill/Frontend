@@ -1,6 +1,6 @@
 // @jsx Didact.createElement
 import { Didact } from "../stack-reconciler/component-state.js";
-import './metrics.js';
+import "./metrics.js";
 
 class Cell extends Didact.Component {
   render() {
@@ -94,7 +94,7 @@ class Demo extends Didact.Component {
             }}
           ></input>
           <p>
-            So, sync rendering the full table will keep the main thread busy for{" "}
+            So, sync rendering the full table will keep the main thread busy for
             <b>{(delay * size * size).toFixed(2)}ms</b>
           </p>
         </div>

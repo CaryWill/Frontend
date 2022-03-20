@@ -283,17 +283,6 @@ let deletions = null;
 const ENOUGH_TIME = 1; // milliseconds
 
 function commitDeletion(fiber, domParent) {
-  // 因为 fiber 是链表结构的
-  // 所以 fiber 如果是组件的话 需要.chlid -> .sibling -> uncle(.parent.sibling) 的删除
-
-  // fiber -> child -> sibling -> sibling
-  // ↓  ↓----------parent-------------⏎
-  // sibling -> child -> sibling
-
-  // 我们之前调用了 commitWork 的时候
-  // 是调用了 commitWork(child), commitWork(sibling)
-  // 所以我们这里也递归删除就行了
-
   if (!domParent) {
     let parentFiber = fiber.parent;
     const isComponent = (f) => f?.type instanceof Function;
@@ -318,8 +307,7 @@ const commitWork = (fiber) => {
   if (!fiber) return;
 
   let parentFiber = fiber.parent;
-  // 如果是组件的话，那么得 traverse parent
-  // 找到一个 HOST_COMPONENT，也就是 dom 元素
+  // 如果是组件的话，那么得 traverse parent 直到找到 dom 元素
   const isComponent = (f) => f?.type instanceof Function;
   while (isComponent(parentFiber)) {
     parentFiber = parentFiber.parent;
@@ -348,6 +336,7 @@ function commitRoot() {
   // 因为我们是根据 wipRoot 的链表来处理带有 effectTag 的
   // fiber，所以 wipRoot 里是没有被删除了的 fiber node
   // 的，所以我们需要一个数组来保存这些需要被删除的 fiber nodes
+  // 原作者那边删除的时候，处理的有问题 deletions.forEach(commitWork) 不大行
   deletions.forEach((fiber) => commitDeletion(fiber));
   // 从第一个 child 开始 patch
   commitWork(wipRoot.child);
