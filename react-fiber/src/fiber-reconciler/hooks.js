@@ -21,14 +21,6 @@ function createElement(type, _props, ..._children) {
   // 正常多个 child 的话，会是 [{type: 'tr', props:{}},type: 'tr', props:{}}]
   // 但是返回数组的话就变成了，[[{type: 'tr', props:{}},type: 'tr', props:{}}]]
   const _rawChildren = [].concat(...rawChildren);
-
-  console.log(
-    "a",
-    _children,
-    "b",
-    _rawChildren.filter((c) => c != null && c !== false)
-  );
-
   const children = _rawChildren
     .filter((c) => c != null && c !== false) // null 和 false 值 不渲染
     .map(function normalize(child) {
@@ -199,7 +191,6 @@ function updateFunctionComponent(fiber) {
   // diff children 的话，还是一样
   // 只不过 function 组件需要调用下自己来生成最新的 children elements 再进行 diff
   const newChildElements = [fiber.type(fiber.props)];
-  console.log(newChildElements);
   reconcileChildren(fiber, newChildElements);
 }
 

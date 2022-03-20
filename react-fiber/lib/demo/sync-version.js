@@ -1,6 +1,6 @@
 // @jsx Didact.createElement
 import { Didact } from "../stack-reconciler/component-state.js";
-import './metrics.js';
+import "./metrics.js";
 
 class Cell extends Didact.Component {
   render() {
@@ -88,7 +88,7 @@ class Demo extends Didact.Component {
       step: "any",
       value: delay,
       onChange: this.changeDelay
-    }), Didact.createElement("p", null, "So, sync rendering the full table will keep the main thread busy for", " ", Didact.createElement("b", null, (delay * size * size).toFixed(2), "ms"))));
+    }), Didact.createElement("p", null, "So, sync rendering the full table will keep the main thread busy for", Didact.createElement("b", null, (delay * size * size).toFixed(2), "ms"))));
   }
 
 }

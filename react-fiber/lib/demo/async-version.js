@@ -101,31 +101,12 @@ function wait(ms) {
 }
 
 function Counter() {
-  // const [state, setState] = Didact.useState(1);
   const [count, setCount] = Didact.useState(0);
   return Didact.createElement("div", null, count === 0 && Didact.createElement("div", null, "23"), Didact.createElement("h1", null, "Count: ", count), Didact.createElement("div", null, Didact.createElement("button", {
     onClick: () => setCount(c => c + 1)
   }, "change count")));
 }
 
-class App extends Didact.Component {
-  state = {
-    count: 0
-  };
-
-  render() {
-    const {
-      count
-    } = this.state;
-    return Didact.createElement("div", null, count === 0 && Didact.createElement("div", null, "23"), Didact.createElement("h1", null, "Count: ", count), count === 0 && Didact.createElement("div", null, "23"), Didact.createElement("div", null, Didact.createElement("button", {
-      onClick: () => this.setState({
-        count: count + 1
-      })
-    }, "change count")), count === 0 && Didact.createElement("div", null, "23"));
-  }
-
-}
-
-const rootDom = document.getElementById("root"); // Didact.render(<Demo />, rootDom);
-
+const rootDom = document.getElementById("root");
+Didact.render(Didact.createElement(Demo, null), rootDom);
 Didact.render(Didact.createElement(Counter, null), rootDom);

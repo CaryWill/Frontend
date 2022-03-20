@@ -111,7 +111,6 @@ function wait(ms) {
 }
 
 function Counter() {
-  // const [state, setState] = Didact.useState(1);
   const [count, setCount] = Didact.useState(0);
   return (
     <div>
@@ -124,28 +123,6 @@ function Counter() {
   );
 }
 
-class App extends Didact.Component {
-  state = { count: 0 };
-  render() {
-    const { count } = this.state;
-    return (
-      <div>
-        {count === 0 && <div>23</div>}
-        <h1>Count: {count}</h1>
-        {/* <h1>State: {state}</h1> */}
-        {count === 0 && <div>23</div>}
-        <div>
-          {/* <button onClick={() => setState((c) => c + 1)}>change state</button> */}
-          <button onClick={() => this.setState({ count: count + 1 })}>
-            change count
-          </button>
-        </div>
-        {count === 0 && <div>23</div>}
-      </div>
-    );
-  }
-}
-
 const rootDom = document.getElementById("root");
-// Didact.render(<Demo />, rootDom);
+Didact.render(<Demo />, rootDom);
 Didact.render(<Counter />, rootDom);
