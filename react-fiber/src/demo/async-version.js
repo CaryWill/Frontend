@@ -1,6 +1,7 @@
 // @jsx Didact.createElement
-import { Didact } from "../fiber-reconciler/new-fiber.js";
-import './metrics.js';
+// import { Didact } from "../fiber-reconciler/new-fiber.js";
+import { Didact } from "../fiber-reconciler/hooks.js";
+import "./metrics.js";
 
 class Cell extends Didact.Component {
   render() {
@@ -20,7 +21,7 @@ class Demo extends Didact.Component {
       elapsed: 0, // the number shown on each Cell
       size: 6, // the size of a row
       period: 1000, // the time (in ms) between updates
-      delay: 20, // the delay (in ms) for the render of each Cell
+      delay: 10, // the delay (in ms) for the render of each Cell
     };
     this.changeDelay = this.changeDelay.bind(this);
     this.changePeriod = this.changePeriod.bind(this);

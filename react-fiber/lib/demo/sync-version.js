@@ -23,7 +23,7 @@ class Demo extends Didact.Component {
       // the size of a row
       period: 1000,
       // the time (in ms) between updates
-      delay: 20 // the delay (in ms) for the render of each Cell
+      delay: 10 // the delay (in ms) for the render of each Cell
 
     };
     this.changeDelay = this.changeDelay.bind(this);

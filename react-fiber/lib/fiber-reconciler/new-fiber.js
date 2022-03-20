@@ -423,9 +423,9 @@ class Component {
     scheduleUpdate(this, partialState);
   }
 
-} 
+} // 实例化组件
 
-// 实例化组件
+
 function createComponentInstance(fiber) {
   const {
     type,
