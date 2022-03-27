@@ -183,7 +183,6 @@ function updateClassComponent(wipFiber) {
   // 根据新的 state 和 props 生成新的组件返回值（children）
   const newChildElements = wipFiber.stateNode.render();
   // 为每一个 child 创建一个 fiber 并且和链表到 wipFiber
-  // TODO: 组件 `render` 函数暂时不支持返回数组
   reconcileChildrenArray(wipFiber, newChildElements);
 }
 
@@ -272,7 +271,6 @@ function performNextUnitOfWork(wipFiber) {
 
 let nextUnitOfWork = null;
 let currentRoot = null; // 上个 commit 的 fiber root
-let wipRoot = null; // 正在 diff 的 fiber root
 const updateQueue = []; // setState, render 等触发一个任务
 let pendingCommit = null; // 当前 diff 完成的 update
 const ENOUGH_TIME = 1; // milliseconds

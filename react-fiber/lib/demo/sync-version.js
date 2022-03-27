@@ -1,6 +1,6 @@
 // @jsx Didact.createElement
-import { Didact } from "../component-state.js";
-import './metrics.js';
+import { Didact } from "../stack-reconciler/component-state.js";
+import "./metrics.js";
 
 class Cell extends Didact.Component {
   render() {
@@ -23,7 +23,7 @@ class Demo extends Didact.Component {
       // the size of a row
       period: 1000,
       // the time (in ms) between updates
-      delay: 3 // the delay (in ms) for the render of each Cell
+      delay: 10 // the delay (in ms) for the render of each Cell
 
     };
     this.changeDelay = this.changeDelay.bind(this);
@@ -88,7 +88,7 @@ class Demo extends Didact.Component {
       step: "any",
       value: delay,
       onChange: this.changeDelay
-    }), Didact.createElement("p", null, "So, sync rendering the full table will keep the main thread busy for", " ", Didact.createElement("b", null, (delay * size * size).toFixed(2), "ms"))));
+    }), Didact.createElement("p", null, "So, sync rendering the full table will keep the main thread busy for", Didact.createElement("b", null, (delay * size * size).toFixed(2), "ms"))));
   }
 
 }
