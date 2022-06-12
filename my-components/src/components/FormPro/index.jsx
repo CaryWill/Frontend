@@ -19,9 +19,10 @@ const App = React.forwardRef((props, ref) => {
 
   const renderFormItem = (_schema) => {
     if (_schema.length === 0) return null;
-    console.log(_schema.length, 'length')
-    return <>{_schema.map(({ label, field, type: Component, options = {}, props: _props = {}, linkage }) => {
-      console.log(data?.[field], field);
+
+    return _schema.map((record) => {
+      const { label, field, type: Component, options = {}, props: _props = {}, linkage } = record;
+
       // 因为联动第一次是没有值的，所以给了 fallback 值，也就是初始值
       const getFieldValue = () => {
         const v = form.getFieldsValue()?.[field];
@@ -31,11 +32,12 @@ const App = React.forwardRef((props, ref) => {
           return data?.[field];
         }
       }
+
       const _subSchema = linkage ? linkage(getFieldValue()) || [] : [];
-      console.log(_subSchema, 'subSchema');
+
       return (
         <>
-          <Form.Item label={label}>
+          <Form.Item label={label} key={field}>
             {getFieldDecorator(field, {
               // 默认初始值不用你自己指定，会自动获取 data 里的值
               initialValue: data?.[field],
@@ -47,11 +49,9 @@ const App = React.forwardRef((props, ref) => {
           {renderFormItem(_subSchema)}
         </>
       )
-    })}
-    </>;
+    })
   }
 
-  console.log(data, 'dd')
   return (
     <Form
       layout="horizontal"

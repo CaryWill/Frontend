@@ -16,7 +16,6 @@ function TablePro(props) {
 
   // TODO: 自动帮忙处理时间格式
   const fetchData = (params = {}) => {
-    console.log('fetch', params);
     props.fetchData(params).then(data => {
       const { total: _total = 0, list = [] } = data || {};
       setDataSource(list);
