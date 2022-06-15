@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
-import { Table, Button, Popover, message, Icon, Popconfirm } from 'antd';
+import { Table } from 'antd';
 
 /**
  * fetchData 需要有固定格式的入参
@@ -16,6 +16,7 @@ function TablePro(props) {
 
   // TODO: 自动帮忙处理时间格式
   const fetchData = (params = {}) => {
+    console.log('fetch', params);
     props.fetchData(params).then(data => {
       const { total: _total = 0, list = [] } = data || {};
       setDataSource(list);

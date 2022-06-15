@@ -17,7 +17,7 @@ const App = React.forwardRef((props, ref) => {
 
   if (loading) return <Spin spinning={loading} />
 
-  const renderFormItem = (_schema) => {
+  const renderFormItem = (_schema = []) => {
     if (_schema.length === 0) return null;
 
     return _schema.map((record) => {
