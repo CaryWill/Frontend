@@ -14,29 +14,22 @@ const SearchComponent = (props) => {
   }} />
 }
 
-function App(props) {
+function App() {
   const [loading, setLoading] = useState(false);
-  const ref = useRef(null);
-  const [data, setData] = useState([]);
 
-  const fetchData = (params) => {
+  const fetchData = (filter) => {
+    console.log('filter', filter);
+    setLoading(true);
     return new Promise(resolve => {
       const data = {
         total: 20,
         list: [{ name: 'cary', id: 1, modified: new Date() }, { name: 'cary', id: 2, modified: new Date() }]
       }
-      setTimeout(() => resolve(data), 1000);
-    })
-  }
-
-  const fetchFormData = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setData({ name: "name", description: "description" });
-      setLoading(false);
       setTimeout(() => {
-      }, 2000)
-    }, 1000)
+        setLoading(false);
+        resolve(data);
+      }, 1000);
+    })
   }
 
   const columns = [
@@ -46,7 +39,7 @@ function App(props) {
   ]
 
   return (
-    <Table fetchData={fetchData} columns={columns} searchComponent={SearchComponent} />
+    <Table fetchData={fetchData} columns={columns} searchComponent={SearchComponent} loading={loading} />
   );
 }
 

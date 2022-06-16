@@ -6,7 +6,7 @@ import { Table } from 'antd';
  * fetchData 需要有固定格式的入参
  **/
 function TablePro(props) {
-  const { columns, searchComponent: SearchComponent = () => null } = props;
+  const { columns, searchComponent: SearchComponent = () => null, ...rest } = props;
   const [filter, setFilter] = useState({});
   const [dataSource, setDataSource] = useState([]);
   const [total, setTotal] = useState(0);
@@ -49,8 +49,6 @@ function TablePro(props) {
         }}
         forceReRender={() => setFlag(old => !old)} />
       <Table
-        columns={_columns}
-        dataSource={dataSource}
         pagination={{
           pageSize,
           total,
@@ -60,6 +58,9 @@ function TablePro(props) {
             setCurrent(v);
           },
         }}
+        {...rest}
+        columns={_columns}
+        dataSource={dataSource}
       />
     </div>
   );
