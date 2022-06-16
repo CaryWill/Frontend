@@ -10,7 +10,6 @@ const SearchComponent = (props) => {
     width: 200
   }} value={filter.name} onChange={e => {
     const v = e.target.value;
-    console.log(v)
     setFilter({ name: v })
   }} />
 }
@@ -24,7 +23,7 @@ function App(props) {
     return new Promise(resolve => {
       const data = {
         total: 20,
-        list: [{ name: 'cary', id: 1 }, { name: 'cary', id: 2 }]
+        list: [{ name: 'cary', id: 1, modified: new Date() }, { name: 'cary', id: 2, modified: new Date() }]
       }
       setTimeout(() => resolve(data), 1000);
     })
@@ -36,7 +35,6 @@ function App(props) {
       setData({ name: "name", description: "description" });
       setLoading(false);
       setTimeout(() => {
-        console.log(ref.current);
       }, 2000)
     }, 1000)
   }
@@ -44,8 +42,7 @@ function App(props) {
   const columns = [
     { title: '名称', key: 'name', dataIndex: 'name' },
     { title: '修改人', key: 'operator', dataIndex: 'operator' },
-    // TODO: time formating
-    { title: '修改时间', key: 'modified', dataIndex: 'modified' },
+    { title: '修改时间', key: 'modified', dataIndex: 'modified', type: 'date' }
   ]
 
   return (

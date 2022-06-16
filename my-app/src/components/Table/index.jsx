@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import moment from 'moment';
-import { Table, Button, Popover, message, Icon, Popconfirm } from 'antd';
+import { Table } from 'antd';
 
 /**
  * fetchData 需要有固定格式的入参
@@ -14,7 +14,6 @@ function TablePro(props) {
   const [current, setCurrent] = useState(1);
   const [flag, setFlag] = useState(false);
 
-  // TODO: 自动帮忙处理时间格式
   const fetchData = (params = {}) => {
     props.fetchData(params).then(data => {
       const { total: _total = 0, list = [] } = data || {};
@@ -27,13 +26,30 @@ function TablePro(props) {
     fetchData();
   }, [flag]);
 
+  const _columns = useMemo(() => {
+    return columns.map(item => {
+      if (item.type === 'date') {
+        return {
+          ...item,
+          render: (text) => {
+            return moment(text).format('YYYY-MM-DD HH:mm:ss');
+          }
+        };
+      }
+      return item;
+    })
+  }, [columns]);
+
   return (
     <div>
-      <SearchComponent filter={filter} setFilter={(args) => {
-        setFilter(old => ({ ...old, ...args }));
-      }} forceReRender={() => setFlag(old => !old)} />
+      <SearchComponent
+        filter={filter}
+        setFilter={(args) => {
+          setFilter(old => ({ ...old, ...args }));
+        }}
+        forceReRender={() => setFlag(old => !old)} />
       <Table
-        columns={columns}
+        columns={_columns}
         dataSource={dataSource}
         pagination={{
           pageSize,

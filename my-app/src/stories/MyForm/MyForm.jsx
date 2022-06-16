@@ -33,7 +33,6 @@ export const MyForm = (props) => {
 
   return (
     <Modal title={title} triggerElement={children} onOk={() => {
-      console.log(ref.current.getFieldsValue());
     }}>
       <Form ref={ref} schema={schema} data={data} loading={loading} />
     </Modal>
