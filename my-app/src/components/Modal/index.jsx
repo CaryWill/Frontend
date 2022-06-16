@@ -5,7 +5,7 @@ const App = (props) => {
   const {
     className = '',
     triggerElement,
-    onOk = () => {},
+    onOk = () => { },
     children,
     ...rest
   } = props;
@@ -22,7 +22,11 @@ const App = (props) => {
         wrapClassName={className}
         visible={visible}
         onCancel={() => setVisible(false)}
-        onOk={() => { onOk?.(); setVisible(false); }}
+        onOk={() => {
+          onOk?.(() => {
+            setVisible(false);
+          });
+        }}
       >
         {children}
       </Modal>
