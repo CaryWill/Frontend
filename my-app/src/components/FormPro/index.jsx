@@ -1,13 +1,13 @@
- from 'react';
-import { Form, Input, Spin } from 'antd';
+import React, {useState} from 'react';
+import {Form, Input, Spin} from 'antd';
 
 /**
  * @description: 表单组件
  * @props loading: 是否加载中, 如果是新建的话可以不传, 如果是需要显示数据的话需要传入
  **/
 const App = React.forwardRef((props, ref) => {
-  const { form, data = {}, loading = false, schema = [], ...rest } = props;
-  const { getFieldDecorator } = form;
+  const {form, data = {}, loading = false, schema = [], ...rest} = props;
+  const {getFieldDecorator} = form;
 
   if (loading) return <Spin spinning={loading} />;
 
@@ -56,8 +56,8 @@ const App = React.forwardRef((props, ref) => {
   return (
     <Form
       layout="horizontal"
-      labelCol={{ span: 5 }}
-      wrapperCol={{ span: 19 }}
+      labelCol={{span: 5}}
+      wrapperCol={{span: 19}}
       {...rest}
     >
       {renderFormItem(schema)}
@@ -67,4 +67,4 @@ const App = React.forwardRef((props, ref) => {
 
 const AppWrapper = Form.create()(App);
 
-export default AppWrapper
+export default AppWrapper;
