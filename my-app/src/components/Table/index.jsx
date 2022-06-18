@@ -32,6 +32,7 @@ function TablePro(props) {
         return {
           ...item,
           render: (text) => {
+            if(!text) return '--'
             return moment(text).format('YYYY-MM-DD HH:mm:ss');
           }
         };
