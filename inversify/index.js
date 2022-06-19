@@ -17,4 +17,12 @@ const fight = async () => {
   console.log(ninja.fight());
 }
 
-fight()
+//fight()
+
+class ClassOnly {
+  constructor() {
+    console.log('ClassOnly');
+  }
+}
+container.bind("ClassOnly").toConstantValue(ClassOnly);
+console.log(container.get("ClassOnly"));
