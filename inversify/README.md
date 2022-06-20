@@ -1,1 +1,5 @@
-可以使用 `ts-node` 来跑 REPL
+这里将 ts-node cli alias 到 tsnode 了。
+
+```bash
+tsnode index.ts
+```

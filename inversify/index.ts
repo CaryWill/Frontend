@@ -1,16 +1,27 @@
-var inversify = require("inversify");
-require("reflect-metadata");
+import { Container } from "inversify";
+import { injectable, inject } from "inversify";
+import "reflect-metadata";
 
+@injectable()
 class Ninja {
-  fight() {
-    return "fight!"
+  constructor(@inject("Weapon") private weapon) {
+    this.weapon = weapon;
+  }
+
+  attack() {
+    console.log(this.weapon.throw());
   }
 }
 
-inversify.decorate(inversify.injectable(), Ninja);
-const ninja_id = "Ninja"; 
-const container = new inversify.Container();
-// 用这个 ninja_id key（serviceIdentifier） 来 map 一个实现类
-container.bind(ninja_id).to(Ninja);
-// 分析依赖，注入依赖，初始化实例
-// const ninja = container.get(ninja_id);
+@injectable()
+class Shuriken {
+  public throw() {
+    return "hit!";
+  }
+}
+
+const myContainer = new Container();
+myContainer.bind("Weapon").to(Shuriken);
+myContainer.bind("Warrior").to(Ninja);
+const ninja = myContainer.get<Ninja>("Warrior");
+ninja.attack();
