@@ -5,8 +5,8 @@
   "scripts": {
     "build": "webpack"
   },
-  "devDependencies": {
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.11.1"
+  "dependencies": {
+    "react": "^18.2.0",
+    "webpack": "^3.12.0"
   }
 }
