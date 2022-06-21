@@ -23,5 +23,8 @@ class Shuriken {
 const myContainer = new Container();
 myContainer.bind("Weapon").to(Shuriken);
 myContainer.bind("Warrior").to(Ninja);
-const ninja = myContainer.get<Ninja>("Warrior");
-ninja.attack();
+myContainer.bind("Warrior").to(Ninja);
+//myContainer.bind(Symbol.for("Warrior")).to(Ninja);
+//myContainer.bind(Symbol.for("Warrior")).to(Ninja);
+//const ninja = myContainer.get<Ninja>("Warrior");
+//ninja.attack();
