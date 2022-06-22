@@ -28,7 +28,7 @@ myContainer.bind("Warrior").to(Ninja);
 //const ninja = myContainer.get<Ninja>("Warrior");
 //ninja.attack();
 
-// Toself
+// --- bind.toSelf --- 
 @injectable()
 class Apple {}
 
