@@ -1,5 +1,5 @@
 import { Container } from "inversify";
-import { injectable, inject } from "inversify";
+import { injectable, inject, tagged } from "inversify";
 import "reflect-metadata";
 
 @injectable()
@@ -28,7 +28,7 @@ myContainer.bind("Warrior").to(Ninja);
 //const ninja = myContainer.get<Ninja>("Warrior");
 //ninja.attack();
 
-// --- bind.toSelf --- 
+// --- bind.toSelf ---
 @injectable()
 class Apple {}
 
@@ -37,5 +37,14 @@ class Orange {}
 
 myContainer.bind(Apple).toSelf().inSingletonScope();
 myContainer.bind(Orange).toSelf().inSingletonScope();
-console.log(myContainer.get(Apple))
-console.log(myContainer.get(Orange))
+console.log(myContainer.get(Apple));
+console.log(myContainer.get(Orange));
+
+// --- constraints ---
+// https://github.com/inversify/InversifyJS/blob/master/wiki/contextual_bindings.md
+myContainer.bind("cary").to(Ninja).whenTargetNamed("goodguy");
+myContainer.bind("cary").to(Ninja).whenTargetNamed("goodboy");
+
+console.log(myContainer.isBoundNamed("cary", "goodguy"));
+console.log(myContainer.isBoundNamed("cary", "goodboy"));
+console.log(myContainer.isBoundNamed("cary", "badboy"));
