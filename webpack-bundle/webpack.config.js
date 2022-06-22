@@ -6,4 +6,7 @@ module.exports = {
     // 包名
     library: "MyLibrary",
   },
+  externals: {
+    //react: "react"
+  }
 };
