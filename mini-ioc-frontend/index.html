@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html theme-mode>
+  <body>
+    <div id="root">loading...</div>
+    <script src="https://g.alicdn.com/code/lib/require.js/2.3.6/require.min.js"></script>
+    <script>
+      requirejs.config({
+        paths: {
+          "@ali/servos-core":
+            "https://g.alicdn.com/servos/core/1.4.5/core/index",
+        },
+      });
+      // 加载 servos-core， callback 接收 servos-core 暴露出来的所有模块
+      requirejs(["@ali/servos-core"], ({ BootstrapConfig }) => {
+        // const config = {};
+        globalThis[BootstrapConfig] = config;
+        // servos 模块会初始化一个 servos 实例，并且会暴露到 globaThis 上
+        // 它初始化就会初始化一个 container 单例, 可以通过 servos 实例访问
+      });
+      require(["@ali/servos-core"], () => {
+        // 可以访问全局的 servos 的原因是 servos-core 在加载完成后会往 window 上挂一个 servos 对象
+        // export const servos = new Servos();
+        // globalThis.servos = servos;
+        // servos 实例初始化成功
+        // 初始化会注册内部的模块
+        servos.bootstrap();
+        // this.container.get("your-module-name");
+        // servos.render 会去 container 身上获取对应的渲染模块，一般就是 react-dom 模块
+        //  servos.render(app, document.getElementById("root"));
+        // TODO: toConstantValue 啥用
+      });
+    </script>
+  </body>
+</html>
