@@ -49,3 +49,4 @@ console.log(myContainer.isBoundNamed("cary", "goodguy"));
 console.log(myContainer.isBoundNamed("cary", "goodboy"));
 console.log(myContainer.isBoundNamed("cary", "badboy"));
 console.log(myContainer.getNamed("cary", "goodguy"));
+console.log(myContainer.getAll());
