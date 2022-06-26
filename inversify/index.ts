@@ -1,5 +1,5 @@
 import { Container } from "inversify";
-import { injectable, inject, tagged } from "inversify";
+import { injectable, inject, tagged, targetName } from "inversify";
 import "reflect-metadata";
 
 @injectable()
@@ -45,10 +45,37 @@ myContainer.bind(Orange).toSelf().inSingletonScope();
 myContainer.bind("cary").to(Ninja).whenTargetNamed("goodguy");
 myContainer.bind("cary").to(Ninja).whenTargetNamed("goodboy");
 
+// -- target name --
+@injectable()
+class Ninja2 {
+  public constructor(@inject("Apple") @targetName("bad") apple: Apple) {
+    console.log("apple:", apple);
+  }
+}
+myContainer
+  .bind("Apple")
+  .to(Apple)
+  .when((request) => request.target.name.equals("bad"));
+
+myContainer
+  .bind("Apple")
+  .to(Apple)
+  .when((request) => request.target.name.equals("good"));
+
+myContainer.bind("ninja2").to(Ninja2);
+//console.log(myContainer.get("ninja2"), myContainer.get("Apple"));
+//console.log(myContainer.getAll("Apple"));
+
 //console.log(myContainer.isBoundNamed("cary", "goodguy"));
 //console.log(myContainer.isBoundNamed("cary", "goodboy"));
 //console.log(myContainer.isBoundNamed("cary", "badboy"));
 //console.log(myContainer.getNamed("cary", "goodguy"));
+
+myContainer
+  .bind("ExtensionProvider")
+  .toConstantValue("a constant value")
+  .whenTargetNamed("react");
+console.log(myContainer.isBoundNamed("ExtensionProvider", "react"), "value is true");
 
 // -- service ---
 @injectable()
@@ -59,11 +86,11 @@ class Juice {
 myContainer.bind(Juice).toSelf().inSingletonScope();
 myContainer.bind("juice").toService(Juice);
 myContainer.bind("juice1").toConstantValue(Juice);
-console.log(myContainer.get("juice"), myContainer.get("juice1"));
+//console.log(myContainer.get("juice"), myContainer.get("juice1"));
 
 @injectable()
 class Rocket {
-  name = "rocket"
+  name = "rocket";
 }
 myContainer.bind("rocket").to(Rocket);
-console.log((myContainer.get("rocket") as any).name);
+//console.log((myContainer.get("rocket") as any).name);
