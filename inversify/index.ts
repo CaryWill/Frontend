@@ -76,12 +76,13 @@ myContainer
   .toConstantValue("a constant value")
   .whenTargetNamed("react");
 console.log(myContainer.isBoundNamed("ExtensionProvider", "react"), "value is true");
+console.log(myContainer.isBound("ExtensionProvider"), "value is true");
 
 myContainer
   .bind("ExtensionProvider")
   .toConstantValue("a constant value")
   .when((request) => request.target.name.equals("react2"));
-console.log(myContainer.isBoundNamed("ExtensionProvider", "react2"), "value is false");
+//console.log(myContainer.isBoundNamed("ExtensionProvider", "react2"), "value is false");
 
 // -- service ---
 @injectable()
