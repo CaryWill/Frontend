@@ -1,10 +1,4 @@
-class Iocos {
-  constructor() {
-    if (!globalThis.requirejs) {
-      throw new Error("Iocos requires requirejs");
-    }
-  }
-
+export class ModuleService {
   registerModule(name, url) {
     globalThis.requirejs.config({
       paths: {
@@ -24,13 +18,6 @@ class Iocos {
           reject("module load failed: ", err);
         }
       );
-    });
-  }
-
-  bootstrap(config = []) {
-    // this.container.bind 和 get 什么时候用的
-    config.list.forEach(({ name, url }) => {
-      this.registerModule(name, url);
     });
   }
 }
