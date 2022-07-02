@@ -30,7 +30,7 @@ const g_config = {
     list: [
       {
         bundleName: "com.test.bundle",
-        modulePath: "bundle.index.6e1b881d2e6f400eb838.js",
+        modulePath: "bundle.index.d71ca673311b96333506.js",
         packageName: "@cary/demo",
         url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
         version: "",
@@ -69,7 +69,7 @@ class SOS {
     this.container = new Container({ defaultScope: "Singleton" });
 
     // 将每个模块里的要对 container 做的操作进行执行
-    globalThis.requirejs.onResourceLoad = (context, map) => {
+    //globalThis.requirejs.onResourceLoad = (context, map) => {
       //globalThis.requirejs([map.name], [], (module) => {
       //默认调用下 default 函数，如果你需要往容器上进行什么服务的话
       //比如 react renderer
@@ -79,7 +79,7 @@ class SOS {
       //module.default();
       //}
       //});
-    };
+    //};
   }
 
   bootstrap() {

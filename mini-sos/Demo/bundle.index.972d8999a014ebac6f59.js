@@ -406,13 +406,13 @@ function Demo() {
   return "It's a demo!";
 }
 
-//function bindingService() {
-  //globalThis.sos.container
-    //.bind(Symbol.for("ReactRenderer"))
-    //.toConstantValue(ReactDOM);
-//}
-//bindgService.isSOS = true;
-/* harmony default export */ __webpack_exports__["default"] = (() => {});
+function bindingService(container) {
+  if (container) {
+    container.bind(Symbol.for("ReactRenderer")).toConstantValue(__WEBPACK_IMPORTED_MODULE_1_react_dom___default.a);
+  }
+}
+bindgService.isSOS = true;
+/* harmony default export */ __webpack_exports__["default"] = (bindingService);
 
 
 /***/ }),
