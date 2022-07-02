@@ -1,13 +1,16 @@
 const packageInfo = require('./package.json');
 module.exports = {
-  entry: "./index.js",
+  entry: {
+    index: "./index.js",
+    input: "./input.js"
+  },
   output: {
-    filename: "mybundle.js",
+    filename: "[name].js",
     libraryTarget: "amd",
     // 包名
     library: packageInfo.name,
   },
   externals: {
-    //react: "react"
+    antd: "antd"
   }
 };

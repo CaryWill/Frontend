@@ -18,13 +18,6 @@ sos.container
 
 export default function App() {
   useEffect(() => {
-    window.sos.container
-      .get("ModuleService")
-      .registerModule(
-        "@cary/demo",
-        "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/mybundle"
-      );
-
     const myModule = window.sos.container
       .get("ModuleService")
       .loadModule("@cary/demo");
@@ -36,9 +29,5 @@ export default function App() {
     });
   }, []);
 
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div id="container"></div>
-    </Suspense>
-  );
+  return <div id="container"></div>;
 }
