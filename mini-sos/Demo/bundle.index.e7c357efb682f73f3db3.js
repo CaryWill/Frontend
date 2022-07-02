@@ -276,11 +276,13 @@ function Demo() {
   return "It's a demo!";
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (() => {
+function bindingService() {
   globalThis.sos.container
     .bind(Symbol.for("ReactRenderer"))
     .toConstantValue(ReactDOM);
-});
+}
+bindgService.isSOS = true;
+/* harmony default export */ __webpack_exports__["default"] = (bindingService);
 
 
 /***/ }),

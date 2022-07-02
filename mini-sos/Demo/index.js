@@ -9,8 +9,10 @@ export function Demo() {
   return "It's a demo!";
 }
 
-export default () => {
+function bindingService() {
   globalThis.sos.container
     .bind(Symbol.for("ReactRenderer"))
     .toConstantValue(ReactDOM);
-};
+}
+bindgService.isSOS = true;
+export default bindingService;
