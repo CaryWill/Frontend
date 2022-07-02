@@ -1,7 +1,8 @@
 import React from "react";
 
 export function App() {
-  return "react app"
+  const [count, setCount] = React.useState(0);
+  return count;
 }
 
 export default App;
