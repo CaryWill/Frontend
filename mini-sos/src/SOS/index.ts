@@ -7,7 +7,7 @@ const g_config = {
   bundle: [
     {
       bundleName: "com.test.bundle",
-      modulePath: "mybundle.js",
+      modulePath: "index.js",
       packageName: "@cary/demo",
       url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
       version: "0.1.0",
