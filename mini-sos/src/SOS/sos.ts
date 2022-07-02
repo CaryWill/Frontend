@@ -30,7 +30,7 @@ const g_config = {
     list: [
       {
         bundleName: "com.test.bundle",
-        modulePath: "bundle.index.198d8afb3166f480a5ca.js",
+        modulePath: "bundle.index.201cacd3f11bfdf59a72.js",
         packageName: "@cary/demo",
         url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
         version: "",
@@ -68,18 +68,16 @@ class SOS {
     }
     this.container = new Container({ defaultScope: "Singleton" });
 
-    // 将每个模块里的要对 container 做的操作进行执行
-    //globalThis.requirejs.onResourceLoad = (context, map) => {
-      //globalThis.requirejs([map.name], [], (module) => {
-        //默认调用下 default 函数，如果你需要往容器上进行什么服务的话
-        //比如 react renderer
-        //TODO: 更好的做法是判断下，default 函数上面是不是有什么标识说它是和容器操作相关的
-        //比如加一个 id
-        //if (module.default && module.default.isSOS) {
-          //module.default(this.container);
-        //}
-      //});
-    //};
+    globalThis.requirejs.onResourceLoad = (context, map) => {
+      // 每个模块可以导出一个默认模块，用来往容器上绑定一些服务
+      // 比如 reactRenderer
+      const module = context.defined[map.name];
+      if (module.default) {
+        // TODO: 这里一股脑儿的调用 default 函数了，可以给 default 函数加个标识
+        // 只有当是你真的想对容器做点什么的时候，才调用 default 函数
+        module.default(this.container);
+      }
+    };
   }
 
   bootstrap() {
@@ -120,25 +118,19 @@ class SOS {
       }
     });
 
-    // load default app
-    // TODO: 抽离 service identifier 到一个文件去
+    // load default app （一般是壳应用，类似 yodajs）
     const defaultApp = g_config.app.default;
-    console.log(defaultApp);
     const target = document.getElementById("root");
     const { loadModule } = this.container.get(ModuleServiceSID);
     const bundleSegments = defaultApp.split(".");
     const entryPoint = bundleSegments.pop();
-    console.log(entryPoint);
     const bundleName = bundleSegments.join(".");
-    console.log(bundleName);
     const matchingBundle = bundleList.find(
       (bundle) => bundle.bundleName === bundleName
     );
-    console.log(matchingBundle);
     loadModule(matchingBundle.packageName).then((module) => {
-      //const { render } = this.container.get(ReactRendererSID);
-      //console.log(render, "render");
-      //render(module[entryPoint](), target);
+      const { render } = this.container.get(ReactRendererSID);
+      render(module[entryPoint](), target);
     });
   }
 }
