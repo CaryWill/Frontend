@@ -2,7 +2,7 @@ import { Container } from "inversify";
 import { ModuleService } from "./services/ModuleService";
 
 // Serve OS
-class SOS {
+export class SOS {
   constructor() {
     if (!globalThis.requirejs) {
       throw new Error("Iocos requires requirejs");
