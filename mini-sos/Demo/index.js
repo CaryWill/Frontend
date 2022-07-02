@@ -10,7 +10,7 @@ export function Demo() {
   return "It's a demo!";
 }
 
-function bindingService(container) {
+export default (container) => {
   try {
     if (container) {
       container.bind(Symbol.for("ReactRenderer")).toConstantValue(ReactDOM);
@@ -18,6 +18,4 @@ function bindingService(container) {
   } catch (err) {
     console.log(err);
   }
-}
-bindgService.isSOS = true;
-export default bindingService;
+};
