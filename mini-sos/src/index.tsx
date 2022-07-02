@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from "react";
-import { createRoot } from "react-dom/client";
+import { render } from "react-dom";
 
 import SOS from "./SOS";
 
@@ -24,8 +24,7 @@ export default function App() {
 
     myModule.then((m) => {
       const container = document.getElementById("container");
-      const root = createRoot(container);
-      root.render(m.default());
+      render(m.default(), container);
     });
   }, []);
 

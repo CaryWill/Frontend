@@ -7,32 +7,44 @@ const g_config = {
   bundle: [
     {
       bundleName: "com.test.bundle",
-      modulePath: "bundle.index.7f9b3837dd7919570a43.js",
+      modulePath: "bundle.index.f788a2067438e3aa4277.js",
       packageName: "@cary/demo",
       url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
       version: "",
     },
     {
-      bundleName: "react",
-      modulePath: "umd/react.production.min.js",
-      packageName: "react",
-      url: "https://cdnjs.cloudflare.com/ajax/libs/react/",
-      version: "17.0.2",
-    },
-    {
-      bundleName: "react-dom",
-      modulePath: "umd/react-dom.production.min.js",
-      packageName: "react-dom",
-      url: "https://cdnjs.cloudflare.com/ajax/libs/react-dom/",
-      version: "17.0.2",
-    },
+      bundleName: "moment",
+      modulePath: "moment.min.js",
+      packageName: "moment",
+      url: "https://cdnjs.cloudflare.com/ajax/libs/moment.js/",
+      version: "2.29.3",
+    }
+    //{
+      //bundleName: "react",
+      //modulePath: "umd/react.development.js",
+      //packageName: "react",
+      //url: "https://cdnjs.cloudflare.com/ajax/libs/react/",
+      //version: "17.0.2",
+    //},
+    //{
+      //bundleName: "react-dom",
+      //modulePath: "umd/react-dom.development.min.js",
+      //packageName: "react-dom",
+      //url: "https://cdnjs.cloudflare.com/ajax/libs/react-dom/",
+      //version: "17.0.2",
+    //},
   ],
   lib: [
-    {
-      bundleName: "antd",
-      preload: false,
-      resources: [],
-    },
+    //{
+      //bundleName: "react",
+      //preload: true,
+      //resources: [],
+    //},
+    //{
+      //bundleName: "react-dom",
+      //preload: true,
+      //resources: [],
+    //},
   ],
 };
 
@@ -68,7 +80,6 @@ class SOS {
     const bundleList = g_config.bundle || [];
     bundleList.forEach((bundle) => {
       const { registerModule } = this.container.get("ModuleService");
-      console.log(resolveBundleURL(bundle));
       registerModule(bundle.packageName, resolveBundleURL(bundle));
     });
 
@@ -79,12 +90,13 @@ class SOS {
         (bundle) => bundle.bundleName === lib.bundleName
       );
       if (!matchingBundle) {
-        console.log(`lib ${lib.bundleName} not found`)
+        console.log(`lib ${lib.bundleName} not found`);
       }
       if (lib.preload) {
         // 应用场景比如说，webpack externals 配置
         const { loadModule } = this.container.get("ModuleService");
-        loadModule(resolveBundleURL(matchingBundle));
+        console.log(matchingBundle, "--");
+        loadModule(matchingBundle.bundleName);
       }
     });
   }

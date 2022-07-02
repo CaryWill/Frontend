@@ -1,8 +1,8 @@
 import React from "react";
+import moment from "moment";
 
 export function App() {
-  const [count, setCount] = React.useState(0);
-  return count;
+  return moment(time).format("YYYY-MM-DD");
 }
 
 export default App;

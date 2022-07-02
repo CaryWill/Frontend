@@ -10,7 +10,6 @@ module.exports = {
     library: packageInfo.name,
   },
   externals: {
-    react: "react",
-    "react-dom": "react-dom"
+    moment: "moment"
   }
 };
