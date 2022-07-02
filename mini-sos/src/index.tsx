@@ -7,6 +7,7 @@ import SOS, { ReactRendererSID } from "./SOS";
 // 初始化容器
 const sos = new SOS();
 globalThis.sos = sos;
+sos.container.bind(ReactRendererSID).toConstantValue(ReactDOM);
 sos.bootstrap();
 
 export default () => {};

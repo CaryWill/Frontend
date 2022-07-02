@@ -30,7 +30,7 @@ const g_config = {
     list: [
       {
         bundleName: "com.test.bundle",
-        modulePath: "bundle.index.38a34e42f2388c2a8bcc.js",
+        modulePath: "bundle.index.e7c357efb682f73f3db3.js",
         packageName: "@cary/demo",
         url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
         version: "",
@@ -69,18 +69,18 @@ class SOS {
     this.container = new Container({ defaultScope: "Singleton" });
 
     // 将每个模块里的要对 container 做的操作进行执行
-    globalThis.requirejs.onResourceLoad = (context, map) => {
-      globalThis.requirejs([map.name], (module) => {
-        console.log(module, "module1", map);
+    //globalThis.requirejs.onResourceLoad = (context, map) => {
+      //globalThis.requirejs([map.name], (module) => {
+        //console.log(module, "module1", map);
         // 默认调用下 default 函数，如果你需要往容器上进行什么服务的话
         // 比如 react renderer
         // TODO: 更好的做法是判断下，default 函数上面是不是有什么标识说它是和容器操作相关的
         // 比如加一个 id
-        if (module.default.isSOS) {
-          module.default();
-        }
-      });
-    };
+        //if (module.default && module.default.isSOS) {
+          //module.default();
+        //}
+      //});
+    //};
   }
 
   bootstrap() {
@@ -125,7 +125,6 @@ class SOS {
     // TODO: 抽离 service identifier 到一个文件去
     const defaultApp = g_config.app.default;
     const target = document.getElementById("root");
-    const { render } = this.container.get(ReactRendererSID);
     const { loadModule } = this.container.get(ModuleServiceSID);
     const bundleSegments = defaultApp.split(".");
     const entryPoint = bundleSegments.pop();
@@ -134,6 +133,9 @@ class SOS {
       (bundle) => bundle.bundleName === bundleName
     );
     loadModule(matchingBundle.packageName).then((module) => {
+      module.default();
+      console.log(module, "module2");
+      //const { render } = this.container.get(ReactRendererSID);
       render(module[entryPoint](), target);
     });
   }
