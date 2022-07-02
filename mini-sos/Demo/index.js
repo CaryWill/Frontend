@@ -11,8 +11,12 @@ export function Demo() {
 }
 
 function bindingService(container) {
-  if (container) {
-    container.bind(Symbol.for("ReactRenderer")).toConstantValue(ReactDOM);
+  try {
+    if (container) {
+      container.bind(Symbol.for("ReactRenderer")).toConstantValue(ReactDOM);
+    }
+  } catch (err) {
+    console.log(err);
   }
 }
 bindgService.isSOS = true;

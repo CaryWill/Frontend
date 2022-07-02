@@ -30,7 +30,7 @@ const g_config = {
     list: [
       {
         bundleName: "com.test.bundle",
-        modulePath: "bundle.index.d71ca673311b96333506.js",
+        modulePath: "bundle.index.972d8999a014ebac6f59.js",
         packageName: "@cary/demo",
         url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
         version: "",
@@ -71,13 +71,13 @@ class SOS {
     // 将每个模块里的要对 container 做的操作进行执行
     //globalThis.requirejs.onResourceLoad = (context, map) => {
       //globalThis.requirejs([map.name], [], (module) => {
-      //默认调用下 default 函数，如果你需要往容器上进行什么服务的话
-      //比如 react renderer
-      //TODO: 更好的做法是判断下，default 函数上面是不是有什么标识说它是和容器操作相关的
-      //比如加一个 id
-      //if (module.default && module.default.isSOS) {
-      //module.default();
-      //}
+        //默认调用下 default 函数，如果你需要往容器上进行什么服务的话
+        //比如 react renderer
+        //TODO: 更好的做法是判断下，default 函数上面是不是有什么标识说它是和容器操作相关的
+        //比如加一个 id
+        //if (module.default && module.default.isSOS) {
+          //module.default(this.container);
+        //}
       //});
     //};
   }
@@ -136,7 +136,6 @@ class SOS {
     );
     console.log(matchingBundle);
     loadModule(matchingBundle.packageName).then((module) => {
-      console.log(module, 'mm')
       //const { render } = this.container.get(ReactRendererSID);
       //console.log(render, "render");
       //render(module[entryPoint](), target);
