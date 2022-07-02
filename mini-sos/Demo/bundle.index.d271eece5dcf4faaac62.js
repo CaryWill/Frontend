@@ -268,7 +268,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 function App() {
-  return __WEBPACK_IMPORTED_MODULE_1_moment___default()(time).format("YYYY-MM-DD");
+  return __WEBPACK_IMPORTED_MODULE_1_moment___default()(new Date()).format("YYYY-MM-DD");
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (App);
