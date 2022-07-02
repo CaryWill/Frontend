@@ -13,13 +13,14 @@ sos.container
   .get("ModuleService")
   .registerModule(
     "@cary/demo",
-    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/dist/assets/index.d87439fb"
+    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/bundle"
   );
 
 const myModule = sos.container
   .get("ModuleService")
   .loadModule("@cary/demo")
   .then((m) => console.log(m));
+console.log(myModule)
 //const OtherComponent = React.lazy(() =>
 //);
 

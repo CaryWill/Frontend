@@ -16,6 +16,7 @@ export class ModuleService {
       globalThis.requirejs(
         [name],
         (module) => {
+          console.log(module);
           resolve(module);
         },
         (err) => {
