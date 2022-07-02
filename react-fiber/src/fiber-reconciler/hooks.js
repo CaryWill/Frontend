@@ -221,7 +221,7 @@ function useState(initialState) {
   };
 
   wipFiber.hooks.push(hook);
-  hookIndex = 0;
+  hookIndex++;
   return [hook.state, setState];
 }
 
