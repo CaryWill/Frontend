@@ -1,7 +1,7 @@
 import React, { useEffect, Suspense, lazy } from "react";
-import SOS from "./SOS";
+import { createRoot } from "react-dom/client";
 
-// http://127.0.0.1:8083/index.39bcbeb6.js
+import SOS from "./SOS";
 
 // TODO: move to html script
 const sos = new SOS();
@@ -13,19 +13,32 @@ sos.container
   .get("ModuleService")
   .registerModule(
     "@cary/demo",
-    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/bundle.amd"
+    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/mybundle"
   );
 
-const myModule = sos.container
-  .get("ModuleService")
-  .loadModule("@cary/demo")
-  .then((m) => console.log('module', m));
-console.log(myModule)
-//const OtherComponent = React.lazy(() =>
-//);
-
 export default function App() {
-  useEffect(() => {}, []);
+  useEffect(() => {
+    window.sos.container
+      .get("ModuleService")
+      .registerModule(
+        "@cary/demo",
+        "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/mybundle"
+      );
 
-  return <Suspense fallback={<div>Loading...</div>}></Suspense>;
+    const myModule = window.sos.container
+      .get("ModuleService")
+      .loadModule("@cary/demo");
+
+    myModule.then((m) => {
+      const container = document.getElementById("container");
+      const root = createRoot(container);
+      root.render(m.default());
+    });
+  }, []);
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <div id="container"></div>
+    </Suspense>
+  );
 }
