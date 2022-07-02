@@ -2,50 +2,62 @@ import { Container } from "inversify";
 import "reflect-metadata";
 
 import { ModuleService } from "./services/ModuleService";
+import { resolveBundleURL } from "./utils";
 
 const g_config = {
-  bundle: [
-    {
-      bundleName: "com.test.bundle",
-      modulePath: "bundle.index.97d3bd499a8f6ebb1a89.js",
-      packageName: "@cary/demo",
-      url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
-      version: "",
-    },
-    {
-      bundleName: "moment",
-      modulePath: "moment.min.js",
-      packageName: "moment",
-      url: "https://cdnjs.cloudflare.com/ajax/libs/moment.js/",
-      version: "2.29.3",
-    }
-    //{
-      //bundleName: "react",
-      //modulePath: "umd/react.development.js",
-      //packageName: "react",
-      //url: "https://cdnjs.cloudflare.com/ajax/libs/react/",
-      //version: "17.0.2",
-    //},
-    //{
-      //bundleName: "react-dom",
-      //modulePath: "umd/react-dom.development.min.js",
-      //packageName: "react-dom",
-      //url: "https://cdnjs.cloudflare.com/ajax/libs/react-dom/",
-      //version: "17.0.2",
-    //},
-  ],
-  lib: [
-    //{
-      //bundleName: "react",
-      //preload: true,
-      //resources: [],
-    //},
-    //{
-      //bundleName: "react-dom",
-      //preload: true,
-      //resources: [],
-    //},
-  ],
+  app: {
+    default: "com.test.bundle.default",
+    // 每一项都是一个 bundle 导出模块
+    // 我们在这里配置这个模块的路由等信息
+    list: [
+      {
+        bundleName: "com.antelope.callout.art",
+        displayName: "外呼任务",
+        entryPoint: "default",
+        name: "callout",
+        resources: [
+          {
+            type: "css",
+            url: "index.css",
+          },
+        ],
+        routePath: "/callout",
+        uuid: "com.antelope.callout.art.callout",
+      },
+    ],
+  },
+  bundle: {
+    list: [
+      {
+        bundleName: "com.test.bundle",
+        modulePath: "bundle.index.d271eece5dcf4faaac62.js",
+        packageName: "@cary/demo",
+        url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
+        version: "",
+      },
+      {
+        bundleName: "moment",
+        modulePath: "moment.min.js",
+        packageName: "moment",
+        url: "https://cdnjs.cloudflare.com/ajax/libs/moment.js/",
+        version: "2.29.3",
+      },
+    ],
+  },
+  lib: {
+    list: [
+      {
+        bundleName: "moment",
+        preload: true,
+        resources: [
+          /*{
+          type: "css",
+          url: "index.css",
+        },*/
+        ],
+      },
+    ],
+  },
 };
 
 // ServeOS -> SOS
@@ -69,22 +81,14 @@ class SOS {
 
     // register/load services from config
     // bundle
-    const resolveBundleURL = (bundle) => {
-      const version = bundle.version ? `${bundle.version}/` : "";
-      const segments = (bundle.url + version + bundle.modulePath).split(".");
-      // remove extension
-      segments.pop();
-      return segments.join(".");
-    };
-
-    const bundleList = g_config.bundle || [];
+    const bundleList = g_config.bundle.list || [];
     bundleList.forEach((bundle) => {
       const { registerModule } = this.container.get("ModuleService");
       registerModule(bundle.packageName, resolveBundleURL(bundle));
     });
 
     // lib
-    const libList = g_config.lib || [];
+    const libList = g_config.lib.list || [];
     libList.forEach((lib) => {
       const matchingBundle = bundleList.find(
         (bundle) => bundle.bundleName === lib.bundleName
@@ -94,9 +98,13 @@ class SOS {
       }
       if (lib.preload) {
         // 应用场景比如说，webpack externals 配置
+        // TODO: preload 什么用，我发现如果你没有加载一个模块，但是 amd 是话，没有的话，默认回去 requirejs 里的配置里找并且加载
+        // 所以作用应该不是依赖的问题，而是单纯的 preload
+        // 网络请求里也是，等待依赖的模块要加载的时候才会进行加载
+        // preload 什么用 可以看下 MDN
         const { loadModule } = this.container.get("ModuleService");
-        console.log(matchingBundle, "--");
         loadModule(matchingBundle.bundleName);
+        // TODO: 如果这个库有依赖的资源那么也加载
       }
     });
   }

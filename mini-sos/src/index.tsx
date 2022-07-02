@@ -4,17 +4,10 @@ import { render } from "react-dom";
 import SOS from "./SOS";
 
 // TODO: move to html script
+// 初始化容器
 const sos = new SOS();
 window.sos = sos;
 sos.bootstrap();
-
-// 注册模块
-/*sos.container
-  .get("ModuleService")
-  .registerModule(
-    "@cary/demo",
-    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/mybundle"
-  );*/
 
 export default function App() {
   useEffect(() => {
