@@ -4,7 +4,7 @@ module.exports = {
     index: "./index.js"
   },
   output: {
-    filename: "bundle.[name].js",
+    filename: "bundle.[name].[hash].js",
     libraryTarget: "amd",
     // 包名
     library: packageInfo.name,

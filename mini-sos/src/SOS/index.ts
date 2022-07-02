@@ -13,13 +13,6 @@ const g_config = {
       version: "",
     },
     {
-      bundleName: "antd",
-      modulePath: "antd.js",
-      packageName: "antd",
-      url: "https://cdnjs.cloudflare.com/ajax/libs/antd/",
-      version: "4.21.4",
-    },
-    {
       bundleName: "react",
       modulePath: "umd/react.production.min.js",
       packageName: "react",
@@ -32,13 +25,6 @@ const g_config = {
       packageName: "react-dom",
       url: "https://cdnjs.cloudflare.com/ajax/libs/react-dom/",
       version: "17.0.2",
-    },
-    {
-      bundleName: "moment",
-      modulePath: "moment.min.js",
-      packageName: "moment",
-      url: "https://cdnjs.cloudflare.com/ajax/libs/moment.js/",
-      version: "2.29.3",
     },
   ],
   lib: [
@@ -73,9 +59,7 @@ class SOS {
     // bundle
     const resolveBundleURL = (bundle) => {
       const version = bundle.version ? `${bundle.version}/` : "";
-      const segments = (bundle.url + version + bundle.modulePath).split(
-        "."
-      );
+      const segments = (bundle.url + version + bundle.modulePath).split(".");
       // remove extension
       segments.pop();
       return segments.join(".");
@@ -95,7 +79,7 @@ class SOS {
         (bundle) => bundle.bundleName === lib.bundleName
       );
       if (!matchingBundle) {
-        throw new Error(`lib ${lib.bundleName} not found`);
+        console.log(`lib ${lib.bundleName} not found`)
       }
       if (lib.preload) {
         // 应用场景比如说，webpack externals 配置
