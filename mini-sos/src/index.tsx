@@ -13,7 +13,7 @@ sos.container
   .get("ModuleService")
   .registerModule(
     "@cary/demo",
-    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/dist/assets/index.5b450732"
+    "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/dist/assets/index.d87439fb"
   );
 
 const myModule = sos.container
