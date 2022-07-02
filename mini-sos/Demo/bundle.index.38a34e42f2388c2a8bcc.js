@@ -276,7 +276,11 @@ function Demo() {
   return "It's a demo!";
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (App);
+/* harmony default export */ __webpack_exports__["default"] = (() => {
+  globalThis.sos.container
+    .bind(Symbol.for("ReactRenderer"))
+    .toConstantValue(ReactDOM);
+});
 
 
 /***/ }),

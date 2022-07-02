@@ -1,18 +1,16 @@
 import React, { useEffect, Suspense, lazy } from "react";
 import ReactDOM from "react-dom";
 
-import SOS from "./SOS";
+import SOS, { ReactRendererSID } from "./SOS";
 
 // TODO: move to html script
 // 初始化容器
 const sos = new SOS();
-window.sos = sos;
-sos.container.bind("ReactRenderer").toConstantValue(ReactDOM);
-console.log(sos.container.get("ReactRenderer"))
+globalThis.sos = sos;
 sos.bootstrap();
 
-export default () => {}
-
+export default () => {};
+// Load module example
 /*export default function App() {
   useEffect(() => {
     const myModule = window.sos.container

@@ -9,4 +9,8 @@ export function Demo() {
   return "It's a demo!";
 }
 
-export default App;
+export default () => {
+  globalThis.sos.container
+    .bind(Symbol.for("ReactRenderer"))
+    .toConstantValue(ReactDOM);
+};
