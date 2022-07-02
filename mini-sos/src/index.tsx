@@ -9,12 +9,12 @@ window.sos = sos;
 sos.bootstrap();
 
 // 注册模块
-sos.container
+/*sos.container
   .get("ModuleService")
   .registerModule(
     "@cary/demo",
     "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/mybundle"
-  );
+  );*/
 
 export default function App() {
   useEffect(() => {

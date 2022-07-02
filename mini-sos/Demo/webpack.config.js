@@ -10,6 +10,7 @@ module.exports = {
     library: packageInfo.name,
   },
   externals: {
-    antd: "antd"
+    react: "react",
+    "react-dom": "react-dom"
   }
 };

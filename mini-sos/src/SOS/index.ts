@@ -7,23 +7,44 @@ const g_config = {
   bundle: [
     {
       bundleName: "com.test.bundle",
-      modulePath: "index.js",
+      modulePath: "bundle.index.js",
       packageName: "@cary/demo",
       url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
-      version: "0.1.0",
+      version: "",
     },
     {
       bundleName: "antd",
       modulePath: "antd.js",
       packageName: "antd",
-      url: "https://cdnjs.cloudflare.com/ajax/libs/antd/4.21.4/",
+      url: "https://cdnjs.cloudflare.com/ajax/libs/antd/",
       version: "4.21.4",
+    },
+    {
+      bundleName: "react",
+      modulePath: "umd/react.production.min.js",
+      packageName: "react",
+      url: "https://cdnjs.cloudflare.com/ajax/libs/react/",
+      version: "17.0.2",
+    },
+    {
+      bundleName: "react-dom",
+      modulePath: "umd/react-dom.production.min.js",
+      packageName: "react-dom",
+      url: "https://cdnjs.cloudflare.com/ajax/libs/react-dom/",
+      version: "17.0.2",
+    },
+    {
+      bundleName: "moment",
+      modulePath: "moment.min.js",
+      packageName: "moment",
+      url: "https://cdnjs.cloudflare.com/ajax/libs/moment.js/",
+      version: "2.29.3",
     },
   ],
   lib: [
     {
       bundleName: "antd",
-      preload: true,
+      preload: false,
       resources: [],
     },
   ],
@@ -50,16 +71,21 @@ class SOS {
 
     // register/load services from config
     // bundle
+    const resolveBundleURL = (bundle) => {
+      const version = bundle.version ? `${bundle.version}/` : "";
+      const segments = (bundle.url + version + bundle.modulePath).split(
+        "."
+      );
+      // remove extension
+      segments.pop();
+      return segments.join(".");
+    };
+
     const bundleList = g_config.bundle || [];
     bundleList.forEach((bundle) => {
       const { registerModule } = this.container.get("ModuleService");
-      const getBundleURL = () => {
-        const segments = (bundle.url + bundle.modulePath).split(".");
-        // remove extension
-        segments.pop();
-        return segments.join(".");
-      };
-      registerModule(bundle.name, getBundleURL());
+      console.log(resolveBundleURL(bundle));
+      registerModule(bundle.packageName, resolveBundleURL(bundle));
     });
 
     // lib
@@ -74,7 +100,7 @@ class SOS {
       if (lib.preload) {
         // 应用场景比如说，webpack externals 配置
         const { loadModule } = this.container.get("ModuleService");
-        loadModule(matchingBundle.bundleName);
+        loadModule(resolveBundleURL(matchingBundle));
       }
     });
   }
