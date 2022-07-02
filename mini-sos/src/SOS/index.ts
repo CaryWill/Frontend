@@ -11,18 +11,18 @@ const g_config = {
     // 我们在这里配置这个模块的路由等信息
     list: [
       {
-        bundleName: "com.antelope.callout.art",
-        displayName: "外呼任务",
-        entryPoint: "default",
-        name: "callout",
+        bundleName: "com.test.bundle",
+        displayName: "测试 DEMO",
+        entryPoint: "Demo",
+        name: "Demo",
         resources: [
           {
             type: "css",
             url: "index.css",
           },
         ],
-        routePath: "/callout",
-        uuid: "com.antelope.callout.art.callout",
+        routePath: "/demo",
+        uuid: "com.test.bundle.Demo",
       },
     ],
   },
@@ -30,7 +30,7 @@ const g_config = {
     list: [
       {
         bundleName: "com.test.bundle",
-        modulePath: "bundle.index.d271eece5dcf4faaac62.js",
+        modulePath: "bundle.index.502cf6616a2863b76669.js",
         packageName: "@cary/demo",
         url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
         version: "",
@@ -86,7 +86,6 @@ class SOS {
       const { registerModule } = this.container.get("ModuleService");
       registerModule(bundle.packageName, resolveBundleURL(bundle));
     });
-
     // lib
     const libList = g_config.lib.list || [];
     libList.forEach((lib) => {
@@ -107,6 +106,8 @@ class SOS {
         // TODO: 如果这个库有依赖的资源那么也加载
       }
     });
+
+    // load default app
   }
 }
 
