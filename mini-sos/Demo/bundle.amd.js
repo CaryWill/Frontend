@@ -259,15 +259,17 @@ process.umask = function() { return 0; };
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony export (immutable) */ __webpack_exports__["getName"] = getName;
+/* harmony export (immutable) */ __webpack_exports__["Demo"] = Demo;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 
 
-function getName() {
+function Demo() {
   console.log(__WEBPACK_IMPORTED_MODULE_0_react___default.a);
-  return "cary";
+  return "It's a demo";
 }
+
+/* harmony default export */ __webpack_exports__["default"] = (Demo);
 
 
 /***/ }),

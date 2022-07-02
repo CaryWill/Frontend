@@ -1,6 +1,8 @@
 import React from "react";
 
-export function getName() {
+export function Demo() {
   console.log(React);
-  return "cary";
+  return "It's a demo";
 }
+
+export default Demo;
