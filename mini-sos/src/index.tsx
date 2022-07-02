@@ -19,7 +19,7 @@ sos.container
 const myModule = sos.container
   .get("ModuleService")
   .loadModule("@cary/demo")
-  .then((m) => console.log(m));
+  .then((m) => console.log('module', m));
 console.log(myModule)
 //const OtherComponent = React.lazy(() =>
 //);
