@@ -1,0 +1,15 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js"></script>
+<script>
+  window.require.config({
+    paths: {
+      react: "https://unpkg.com/react@17/umd/react.development",
+      "react-dom": "https://unpkg.com/react-dom@17/umd/react-dom.development",
+    },
+  });
+  window.define("react", [], () => ({ version: "17.0.0" }));
+  window.define("mymodule", ["react"], function (React) {
+    console.log(React);
+    return React;
+  });
+  window.require(["mymodule"]);
+</script>
