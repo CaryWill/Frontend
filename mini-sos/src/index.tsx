@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from "react";
-import { render } from "react-dom";
+import ReactDOM from "react-dom";
 
 import SOS from "./SOS";
 
@@ -7,9 +7,13 @@ import SOS from "./SOS";
 // 初始化容器
 const sos = new SOS();
 window.sos = sos;
+sos.container.bind("ReactRenderer").toConstantValue(ReactDOM);
+console.log(sos.container.get("ReactRenderer"))
 sos.bootstrap();
 
-export default function App() {
+export default () => {}
+
+/*export default function App() {
   useEffect(() => {
     const myModule = window.sos.container
       .get("ModuleService")
@@ -22,4 +26,4 @@ export default function App() {
   }, []);
 
   return <div id="container"></div>;
-}
+}*/

@@ -6,7 +6,7 @@ import { resolveBundleURL } from "./utils";
 
 const g_config = {
   app: {
-    default: "com.test.bundle.default",
+    default: "com.test.bundle.Demo",
     // 每一项都是一个 bundle 导出模块
     // 我们在这里配置这个模块的路由等信息
     list: [
@@ -108,6 +108,20 @@ class SOS {
     });
 
     // load default app
+    // TODO: 抽离 service identifier 到一个文件去
+    const defaultApp = g_config.app.default;
+    const target = document.getElementById("root");
+    const { render } = this.container.get("ReactRenderer");
+    const { loadModule } = this.container.get("ModuleService");
+    const bundleSegments = defaultApp.split(".");
+    const entryPoint = bundleSegments.pop();
+    const bundleName = bundleSegments.join(".");
+    const matchingBundle = bundleList.find(
+      (bundle) => bundle.bundleName === bundleName
+    );
+    loadModule(matchingBundle.packageName).then((module) => {
+      render(module[entryPoint](), target);
+    });
   }
 }
 
