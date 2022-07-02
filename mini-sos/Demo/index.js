@@ -16,4 +16,4 @@ function bindingService() {
     .toConstantValue(ReactDOM);
 }
 bindgService.isSOS = true;
-export default bindingService;
+export default () => {};
