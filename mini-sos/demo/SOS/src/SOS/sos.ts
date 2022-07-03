@@ -37,7 +37,7 @@ const g_config = {
         modulePath: "bundle.index.js",
         packageName: "@cary/demo",
         //url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/demo/",
-        url: 'http://127.0.0.1:8080/',
+        url: "http://127.0.0.1:8080/",
         version: "",
       },
       {
@@ -72,6 +72,20 @@ const g_config = {
         extensionPoints: [],
         implements: "com.xixikf.workbench.Plugin",
         name: "Demo",
+        resources: [
+          {
+            type: "css",
+            url: "index.css",
+          },
+        ],
+      },
+      {
+        bundleName: "com.test.bundle",
+        displayName: "示例扩展2",
+        entryPoint: "App",
+        extensionPoints: [],
+        implements: "com.xixikf.workbench.Plugin",
+        name: "App",
         resources: [
           {
             type: "css",

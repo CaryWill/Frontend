@@ -35751,6 +35751,11 @@ function PluginContainer(props) {
         slots: [],
         uuid: "com.test.bundle.Demo" // fullName
 
+      }, {
+        displayName: "插件2",
+        slots: [],
+        uuid: "com.test.bundle.App" // fullName
+
       }]
     }]);
   };
