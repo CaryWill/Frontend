@@ -15,6 +15,8 @@ export function Shell() {
   return <PluginContainer slot="Right" />;
 }
 
+// 当前模块被加载完成后，此函数会被执行
+// 来注册 ReactRenderer 服务提供渲染能力
 export default (container) => {
   try {
     if (container) {

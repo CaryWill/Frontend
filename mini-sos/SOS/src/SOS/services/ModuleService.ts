@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import 'reflect-metadata';
+import "reflect-metadata";
 
 @injectable()
 export class ModuleService {
@@ -19,7 +19,7 @@ export class ModuleService {
           resolve(module);
         },
         (err) => {
-          reject("module load failed: ", err);
+          reject(`${name} module load failed`);
         }
       );
     });

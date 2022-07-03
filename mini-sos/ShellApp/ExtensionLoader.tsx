@@ -2,12 +2,12 @@ import React, { lazy, Suspense } from "react";
 import { Container } from "inversify";
 import "reflect-metadata";
 import { resolveBundleInfo } from "../SOS/src/SOS/utils.ts";
+import { ModuleServiceID } from "../SOS/src/SOS/services/ServiceIdentifiers.ts";
 
 export function ExtensionLoader(manifest) {
-  const Component = lazy(async () => {
-    const { loadModule } = globalThis.sos.container.get(
-      Symbol.for("ModuleService")
-    );
+  const LazyComponent = lazy(async () => {
+    const { container } = globalThis.sos;
+    const { loadModule } = container.get(ModuleServiceID);
     const bundle = resolveBundleInfo(manifest);
     const module = await loadModule(bundle.packageName);
     return {
@@ -16,7 +16,7 @@ export function ExtensionLoader(manifest) {
   });
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Component />
+      <LazyComponent />
     </Suspense>
   );
 }
