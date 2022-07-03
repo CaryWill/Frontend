@@ -11,17 +11,19 @@ export function PluginContainer(props) {
     // 根据应用或者扩展来获取插件的配置信息
     const fullName = resolveFullName(manifest);
     // 现在先写死好了
-    return Promise.resolve({
-      slotName: "Right",
-      slotDisplayName: "右侧插件区",
-      plugins: [
-        {
-          displayName: "插件1",
-          slots: [],
-          uuid: "com.test.bundle.Demo", // fullName
-        },
-      ],
-    });
+    return Promise.resolve([
+      {
+        slotName: "Right",
+        slotDisplayName: "右侧插件区",
+        plugins: [
+          {
+            displayName: "插件1",
+            slots: [],
+            uuid: "com.test.bundle.Demo", // fullName
+          },
+        ],
+      },
+    ]);
   };
 
   const getExtensions = async () => {
@@ -35,6 +37,7 @@ export function PluginContainer(props) {
       }, {});
     // 过滤
     const data = await fetchRemoteConfiguredPluginInfo();
+    console.log(data, "data");
     let _extensions = data.find((item) => item.slotName === slot);
     if (!_extensions) return [];
     _extensions = _extensions.plugins.map(
@@ -51,7 +54,7 @@ export function PluginContainer(props) {
   return (
     <div>
       {extensions.map((e) => (
-        <div>{e.name}</div>
+        <div key={e.name}>{e.name}</div>
       ))}
     </div>
   );

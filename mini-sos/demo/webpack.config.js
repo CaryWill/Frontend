@@ -4,13 +4,17 @@ module.exports = {
     index: "./index.js",
   },
   output: {
-    filename: "bundle.[name].[hash].js",
+    //filename: "bundle.[name].[hash].js",
+    filename: "bundle.[name].js",
     libraryTarget: "amd",
     // 包名
     library: packageInfo.name,
   },
   externals: {
     moment: "moment",
+  },
+  devServer: {
+    static: "./dist",
   },
   module: {
     loaders: [
@@ -19,7 +23,7 @@ module.exports = {
         exclude: /node_modules/,
         loader: "babel-loader",
         query: {
-          presets: ['@babel/preset-env', "@babel/preset-react"],
+          presets: ["@babel/preset-env", "@babel/preset-react"],
         },
       },
     ],

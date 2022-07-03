@@ -34399,7 +34399,7 @@ function PluginContainer(props) {
     // 根据应用或者扩展来获取插件的配置信息
     var fullName = Object(__WEBPACK_IMPORTED_MODULE_1__SOS_src_SOS_utils_ts__["a" /* resolveFullName */])(manifest); // 现在先写死好了
 
-    return Promise.resolve({
+    return Promise.resolve([{
       slotName: "Right",
       slotDisplayName: "右侧插件区",
       plugins: [{
@@ -34408,7 +34408,7 @@ function PluginContainer(props) {
         uuid: "com.test.bundle.Demo" // fullName
 
       }]
-    });
+    }]);
   };
 
   var getExtensions = /*#__PURE__*/function () {
@@ -34431,25 +34431,26 @@ function PluginContainer(props) {
 
             case 4:
               data = _context.sent;
+              console.log(data, "data");
               _extensions = data.find(function (item) {
                 return item.slotName === slot;
               });
 
               if (_extensions) {
-                _context.next = 8;
+                _context.next = 9;
                 break;
               }
 
               return _context.abrupt("return", []);
 
-            case 8:
+            case 9:
               _extensions = _extensions.plugins.map(function (plugin) {
                 return extensionMap[plugin.uuid];
               });
               setExtensions(_extensions);
               return _context.abrupt("return", _extensions);
 
-            case 11:
+            case 12:
             case "end":
               return _context.stop();
           }
@@ -34466,7 +34467,9 @@ function PluginContainer(props) {
     getExtensions();
   }, [slot]);
   return /*#__PURE__*/__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", null, extensions.map(function (e) {
-    return /*#__PURE__*/__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", null, e.name);
+    return /*#__PURE__*/__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+      key: e.name
+    }, e.name);
   }));
 }
 

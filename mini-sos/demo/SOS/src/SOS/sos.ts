@@ -10,7 +10,7 @@ import { resolveBundleURL } from "./utils";
 
 const g_config = {
   app: {
-    default: "com.test.bundle.Demo",
+    default: "com.test.bundle.Shell",
     // 每一项都是一个 bundle 导出模块
     // 我们在这里配置这个模块的路由等信息
     list: [
@@ -34,9 +34,10 @@ const g_config = {
     list: [
       {
         bundleName: "com.test.bundle",
-        modulePath: "bundle.index.201cacd3f11bfdf59a72.js",
+        modulePath: "bundle.index.js",
         packageName: "@cary/demo",
-        url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/Demo/",
+        //url: "https://cdn.jsdelivr.net/gh/CaryWill/Frontend/mini-sos/demo/",
+        url: 'http://127.0.0.1:8080/',
         version: "",
       },
       {
