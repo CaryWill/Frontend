@@ -1,6 +1,5 @@
 import { Container } from "inversify";
 import "reflect-metadata";
-
 import {
   ModuleServiceID,
   ReactRendererServiceID,
@@ -68,10 +67,10 @@ const g_config = {
       {
         bundleName: "com.test.bundle",
         displayName: "示例扩展",
-        entryPoint: "ExampleExtension",
+        entryPoint: "Demo",
         extensionPoints: [],
-        implements: "com.example",
-        name: "ExampleExtension",
+        implements: "com.xixikf.workbench.Plugin",
+        name: "Demo",
         resources: [
           {
             type: "css",
@@ -98,6 +97,7 @@ class SOS {
       if (module.default) {
         // TODO: 这里一股脑儿的调用 default 函数了，可以给 default 函数加个标识
         // 只有当是你真的想对容器做点什么的时候，才调用 default 函数
+        // 也就是所谓的 隐式的注册机制
         module.default(this.container);
       }
     };
@@ -115,6 +115,7 @@ class SOS {
     });
 
     // register/load services from config
+    // 也就是所谓的 显示的注册的机制
     // bundle
     const bundleList = g_config.bundle.list || [];
     bundleList.forEach((bundle) => {

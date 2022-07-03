@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import "reflect-metadata";
-import { resolveFullname } from "../utils";
+import { resolveFullName } from "../utils";
 
 @injectable()
 export class ExtensionService {
@@ -8,7 +8,7 @@ export class ExtensionService {
   registerExtension(manifest) {
     const { container } = globalThis.sos;
     const serviceId = manifest.implements;
-    const fullName = resolveFullname(manifest);
+    const fullName = resolveFullName(manifest);
     // 你可以通过 `sos.container.getNamed(serviceId, fullName)` 获取到这个扩展
     // 以及可以通过 `sos.container.getAll(serviceId)` 获取到所有的扩展
     container

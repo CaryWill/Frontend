@@ -6,7 +6,7 @@ export const resolveBundleURL = (bundleManifest) => {
   return segments.join(".");
 };
 
-export const resolveFullname = (serviceManifest) => {
+export const resolveFullName = (serviceManifest) => {
   const { bundleName, name, entryPoint } = serviceManifest;
   // 一般 name 和 entryPoint 是同名的
   return `${bundleName}.${name || entryPoint}`;
