@@ -1,7 +1,12 @@
 import { Container } from "inversify";
 import "reflect-metadata";
 
-import { ModuleService, ModuleServiceSID, ReactRendererSID } from "./services";
+import {
+  ModuleServiceID,
+  ReactRendererServiceID,
+  ExtensionServiceID,
+} from "./services";
+import { ModuleService, ExtensionService } from "./services";
 import { resolveBundleURL } from "./utils";
 
 const g_config = {
@@ -58,6 +63,24 @@ const g_config = {
       },
     ],
   },
+  extension: {
+    list: [
+      {
+        bundleName: "com.test.bundle",
+        displayName: "示例扩展",
+        entryPoint: "ExampleExtension",
+        extensionPoints: [],
+        implements: "com.example",
+        name: "ExampleExtension",
+        resources: [
+          {
+            type: "css",
+            url: "index.css",
+          },
+        ],
+      },
+    ],
+  },
 };
 
 // ServeOS -> SOS
@@ -83,7 +106,8 @@ class SOS {
   bootstrap() {
     // TODO: requirejs 应该会等待所有资源家在完成才会继续吧，毕竟通过 script tag
     const services = [
-      [ModuleServiceSID, ModuleService], // 提供模块注册和加载服务
+      [ModuleServiceID, ModuleService], // 提供模块注册和加载服务(register -> requirejs)
+      [ExtensionServiceID, ExtensionService], // 提供扩展绑定服务(binding -> ioc container)
     ];
     // register built-in services
     services.forEach(([name, service]) => {
@@ -94,7 +118,7 @@ class SOS {
     // bundle
     const bundleList = g_config.bundle.list || [];
     bundleList.forEach((bundle) => {
-      const { registerModule } = this.container.get(ModuleServiceSID);
+      const { registerModule } = this.container.get(ModuleServiceID);
       registerModule(bundle.packageName, resolveBundleURL(bundle));
     });
     // lib
@@ -112,16 +136,22 @@ class SOS {
         // 所以作用应该不是依赖的问题，而是单纯的 preload
         // 网络请求里也是，等待依赖的模块要加载的时候才会进行加载
         // preload 什么用 可以看下 MDN
-        const { loadModule } = this.container.get(ModuleServiceSID);
+        const { loadModule } = this.container.get(ModuleServiceID);
         loadModule(matchingBundle.bundleName);
         // TODO: 如果这个库有依赖的资源那么也加载
       }
+    });
+    // extension
+    const extensionList = g_config.extension.list || [];
+    extensionList.forEach((extension) => {
+      const { registerExtension } = this.container.get(ExtensionServiceID);
+      registerExtension(extension);
     });
 
     // load default app （一般是壳应用，类似 yodajs）
     const defaultApp = g_config.app.default;
     const target = document.getElementById("root");
-    const { loadModule } = this.container.get(ModuleServiceSID);
+    const { loadModule } = this.container.get(ModuleServiceID);
     const bundleSegments = defaultApp.split(".");
     const entryPoint = bundleSegments.pop();
     const bundleName = bundleSegments.join(".");
@@ -129,7 +159,7 @@ class SOS {
       (bundle) => bundle.bundleName === bundleName
     );
     loadModule(matchingBundle.packageName).then((module) => {
-      const { render } = this.container.get(ReactRendererSID);
+      const { render } = this.container.get(ReactRendererServiceID);
       render(module[entryPoint](), target);
     });
   }

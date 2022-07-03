@@ -1,13 +1,13 @@
 import React, { useEffect, Suspense, lazy } from "react";
 import ReactDOM from "react-dom";
 
-import SOS, { ReactRendererSID } from "./SOS";
+import SOS, { ReactRendererServiceID } from "./SOS";
 
 // TODO: move to html script
 // 初始化容器
 const sos = new SOS();
 globalThis.sos = sos;
-//sos.container.bind(ReactRendererSID).toConstantValue(ReactDOM);
+//sos.container.bind(ReactRendererServiceID).toConstantValue(ReactDOM);
 sos.bootstrap();
 
 export default () => {};

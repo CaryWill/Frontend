@@ -1,2 +1,4 @@
-export const ReactRendererSID = Symbol.for("ReactRenderer");
-export const ModuleServiceSID = Symbol.for("ModuleService");
+export const ReactRendererServiceID = Symbol.for("ReactRenderer");
+export const ModuleServiceID = Symbol.for("ModuleService");
+export const ExtensionServiceID = Symbol.for("ExtensionService");
+export const ExtensionPointsServiceID = Symbol.for("ExtensionPoints");
