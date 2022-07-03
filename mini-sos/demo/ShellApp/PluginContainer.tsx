@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { resolveFullName } from "../SOS/src/SOS/utils.ts";
+import { ExtensionLoader } from "./ExtensionLoader.tsx";
 
 export function PluginContainer(props) {
   const { slot } = props;
@@ -37,7 +38,6 @@ export function PluginContainer(props) {
       }, {});
     // 过滤
     const data = await fetchRemoteConfiguredPluginInfo();
-    console.log(data, "data");
     let _extensions = data.find((item) => item.slotName === slot);
     if (!_extensions) return [];
     _extensions = _extensions.plugins.map(
@@ -53,9 +53,9 @@ export function PluginContainer(props) {
 
   return (
     <div>
-      {extensions.map((e) => (
-        <div key={e.name}>{e.name}</div>
-      ))}
+      {extensions.map((e) => {
+        return <ExtensionLoader key={e.name} {...e} />;
+      })}
     </div>
   );
 }
