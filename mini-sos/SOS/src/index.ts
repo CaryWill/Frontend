@@ -1,3 +1,3 @@
 export * from "./sos";
-export { default } from "./sos";
 export * from "./services";
+export { default } from "./sos";
