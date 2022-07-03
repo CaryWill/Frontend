@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { resolveFullName } from "../SOS/src/SOS/utils.ts";
+import { resolveFullName } from "../SOS/src/utils.ts";
 import { ExtensionLoader } from "./ExtensionLoader.tsx";
 
 export function PluginContainer(props) {
@@ -48,6 +48,7 @@ export function PluginContainer(props) {
     _extensions = _extensions.plugins.map(
       (plugin) => extensionMap[plugin.uuid]
     );
+
     setExtensions(_extensions);
     return _extensions;
   };

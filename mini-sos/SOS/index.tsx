@@ -1,4 +1,4 @@
-import SOS from "./SOS";
+import SOS from "./src/SOS";
 
 // 初始化容器
 const sos = new SOS();

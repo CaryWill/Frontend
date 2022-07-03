@@ -13,9 +13,6 @@ module.exports = {
   externals: {
     moment: "moment",
   },
-  devServer: {
-    static: "./dist",
-  },
   module: {
     loaders: [
       {

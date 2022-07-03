@@ -19,23 +19,21 @@ class SOS {
     globalThis.requirejs.onResourceLoad = (context, map) => {
       // 每个模块可以导出一个默认模块，用来往容器上绑定一些服务
       // 比如 reactRenderer
+      // 也就是所谓的 隐式的注册机制
       const module = context.defined[map.name];
       if (module.default) {
         // TODO: 这里一股脑儿的调用 default 函数了，可以给 default 函数加个标识
-        // 只有当是你真的想对容器做点什么的时候，才调用 default 函数
-        // 也就是所谓的 隐式的注册机制
         module.default(this.container);
       }
     };
   }
 
   bootstrap(g_config) {
-    // TODO: requirejs 应该会等待所有资源家在完成才会继续吧，毕竟通过 script tag
+    // register built-in services
     const services = [
       [ModuleServiceID, ModuleService], // 提供模块注册和加载服务(register -> requirejs)
       [ExtensionServiceID, ExtensionService], // 提供扩展绑定服务(binding -> ioc container)
     ];
-    // register built-in services
     services.forEach(([name, service]) => {
       this.container.bind(name).to(service);
     });
@@ -75,9 +73,8 @@ class SOS {
       registerExtension(extension);
     });
 
-    // load default app （一般是壳应用，类似 yodajs）
+    // load default app （一般是壳应用，类似 yodajs, 提供路由等服务）
     const defaultApp = g_config.app.default;
-    const target = document.getElementById("root");
     const { loadModule } = this.container.get(ModuleServiceID);
     const bundleSegments = defaultApp.split(".");
     const entryPoint = bundleSegments.pop();
@@ -87,6 +84,7 @@ class SOS {
     );
     loadModule(matchingBundle.packageName).then((module) => {
       const { render } = this.container.get(ReactRendererServiceID);
+      const target = document.getElementById("root");
       render(module[entryPoint](), target);
     });
   }
