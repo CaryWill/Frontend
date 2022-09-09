@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Webpack-demos</title>
+  </head>
+  <body>
+  <script src="https://g.alicdn.com/code/lib/require.js/2.3.6/require.min.js"></script>
+  <script>
+    globalThis.requirejs.config({
+      paths: {
+        'MyLibrary': `/bundle.amd`,
+        'UnnamedAmdPackage': '/bundle.umd',
+      },
+    });
+    globalThis.requirejs(['MyLibrary'], (module) => {
+      console.log('MyLibrary', module)
+    })
+    // 匿名模块
+    globalThis.requirejs(['UnnamedAmdPackage'], (module) => {
+      console.log('UnnamedAmdPackage', module)
+    })
+  </script>
+</html>

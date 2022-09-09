@@ -1,0 +1,12 @@
+{
+  "name": "requirejs demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "http-server . --cors -c-1",
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "webpack": "^3.10.0"
+  }
+}
