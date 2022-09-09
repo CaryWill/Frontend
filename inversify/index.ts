@@ -4,7 +4,7 @@ import "reflect-metadata";
 
 @injectable()
 class Ninja {
-  constructor(@inject("Weapon") private weapon) {
+  constructor(@inject("Weapon") weapon) {
     this.weapon = weapon;
   }
 
