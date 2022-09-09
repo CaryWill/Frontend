@@ -1,24 +1,77 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Webpack-demos</title>
+    <link rel="shortcut icon" href="#" type="image/x-icon">
   </head>
+
   <body>
-  <script src="https://g.alicdn.com/code/lib/require.js/2.3.6/require.min.js"></script>
-  <script>
-    globalThis.requirejs.config({
-      paths: {
-        'MyLibrary': `/bundle.amd`,
-        'UnnamedAmdPackage': '/bundle.umd',
-      },
-    });
-    globalThis.requirejs(['MyLibrary'], (module) => {
-      console.log('MyLibrary', module)
-    })
-    // 匿名模块
-    globalThis.requirejs(['UnnamedAmdPackage'], (module) => {
-      console.log('UnnamedAmdPackage', module)
-    })
-  </script>
+    <script src="https://g.alicdn.com/code/lib/require.js/2.3.6/require.min.js"></script>
+    <!-- Step1 定义和调用一个模块 {{{ -->
+    <script>
+      globalThis.requirejs.config({
+        paths: {
+          MyLibrary: `/bundle.amd`,
+          UnnamedAmdPackage: "/bundle.umd",
+        },
+      });
+      // 加载一个非匿名模块
+      globalThis.requirejs(["MyLibrary"], (module) => {
+        console.log("MyLibrary", module);
+      });
+      // 加载一个匿名模块
+      globalThis.requirejs(["UnnamedAmdPackage"], (module) => {
+        console.log("UnnamedAmdPackage", module);
+      });
+    </script>
+    <!--}}}-->
+    <!-- Step2 定义一个模块加载类 {{{ -->
+    <script>
+      // 3.0 里一个默认 bundle 基本长这样
+      const bundleInfo = {
+        bundleName: "moment",
+        modulePath: "moment.min.js",
+        packageName: "moment",
+        url: "https://cdnjs.cloudflare.com/ajax/libs/moment.js/",
+        version: "2.29.3",
+      };
+
+      class ModuleService {
+        registerModule(name, url) {
+          globalThis.require.config({
+            paths: {
+              [name]: url,
+            },
+          });
+        }
+
+        loadModule(name) {
+          return new Promise((resolve, reject) => {
+            globalThis.require(
+              [name],
+              (module) => {
+                resolve(module);
+              },
+              (err) => {
+                reject(`${name} module load failed`);
+              }
+            );
+          });
+        }
+      }
+
+      // 加载一个模块
+      const moduleService = new ModuleService();
+      moduleService.registerModule(
+        "moment",
+        // 这个 URL 我们用 bundleInfo 拼起来就长下面这样
+        "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min"
+      ); 
+      moduleService.loadModule("moment").then((moment) => console.log("moment", moment));
+    </script>
+    <!--}}}-->
+  </body>
 </html>
+
+<!-- vim: set foldmethod=marker foldlevel=0 foldenable:-->
