@@ -58,9 +58,10 @@ console.log(plugin1, plugin2);
 // 获取所有的 plugin
 const allPlugins = myContainer.getAll<Plugin[]>("com.xixikf.workbench.Plugin");
 console.log('allPlugins', allPlugins);
+// }}}
 
-// 其他 - Constraints {{{
-// 除了可以绑定到一个类上，然后帮你初始化实例，也可以直接绑定到一个常量上
+// 其他 {{{
+// 1. 除了可以绑定到一个类上，然后帮你初始化实例，也可以直接绑定到一个常量上
 myContainer.bind<number>('seven').toConstantValue(7);
 const seven = myContainer.get<number>('seven');
 console.log(seven);
