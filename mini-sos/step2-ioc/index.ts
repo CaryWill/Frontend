@@ -40,6 +40,7 @@ myContainer.get<Ninja>("Warrior").attack();*/
 
 // 工作台插件举例 - Constraints {{{
 // https://github.com/inversify/InversifyJS/blob/master/wiki/contextual_bindings.md
+// https://github.com/inversify/InversifyJS/blob/master/wiki/container_api.md
 const Ninja3 = Ninja;
 myContainer.bind<Ninja>("Warrior").to(Ninja3).whenTargetNamed("ninja3");
 myContainer.bind<Ninja>("Warrior").to(Ninja3).whenTargetNamed("ninja4");
