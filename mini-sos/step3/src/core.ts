@@ -4,9 +4,11 @@ import {
   ModuleServiceID,
   ReactRendererServiceID,
   ExtensionServiceID,
-} from "./services";
-import { ModuleService, ExtensionService } from "./services";
-import { resolveBundleURL } from "./utils";
+  ModuleService,
+  ExtensionService,
+} from "@/services";
+import { resolveBundleURL } from "@/utils";
+import { Bundle, Lib, Extension } from "@/types";
 
 interface ServOS {
   container: Container;
@@ -45,16 +47,16 @@ class SOS implements ServOS {
     //  开始显式注册
     // bundle
     const bundleList = g_config.bundle.list || [];
-    const bundleNames = {} as any;
-    bundleList.forEach((bundle: any) => {
+    const bundles: { [key: string]: Bundle } = {};
+    bundleList.forEach((bundle: Bundle) => {
       registerModule(bundle.packageName, resolveBundleURL(bundle));
-      bundleNames[bundle.bundleName] = bundle;
+      bundles[bundle.bundleName] = bundle;
     });
 
     // 预加载一些 bundle
     const libList = g_config.lib.list || [];
-    libList.forEach((lib: any) => {
-      if (bundleNames[lib.bundleName] && lib.preload) {
+    libList.forEach((lib: Lib) => {
+      if (bundles[lib.bundleName] && lib.preload) {
         loadModule(lib.bundleName);
         // TODO: 如果这个库有依赖的资源那么也加载，比如 CSS
       }
@@ -62,14 +64,14 @@ class SOS implements ServOS {
 
     // 绑定 extension 到 ioc container 上
     const extensionList = g_config.extension.list || [];
-    extensionList.forEach((extension: any) => {
+    extensionList.forEach((extension: Extension) => {
       registerExtension(extension);
     });
 
     // 加载壳应用，类似 yodajs, 提供路由, 状态管理等服务
     const defaultApp = g_config.app.default;
     const [, bundleName, entryPoint] = defaultApp.match(/(.*)[.](.*)/);
-    const bundle = bundleNames[bundleName];
+    const bundle = bundles[bundleName];
     loadModule(bundle.packageName).then((module: any) => {
       // 一般壳应用会使用隐式注册往 ioc container 上注册一个 ReactRendererService 服务供我们使用
       const { render } = this.container.get<any>(ReactRendererServiceID);

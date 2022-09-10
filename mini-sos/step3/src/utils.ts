@@ -1,12 +1,14 @@
-export const resolveBundleURL = (bundle: any) => {
+import { Bundle, Manifest } from "@/types";
+
+export const resolveBundleURL = (bundle: Bundle) => {
   const { version = "", url, modulePath } = bundle;
   // remove file extension
-  const fullURL = `${url}${version ? version + "/" : ""}${modulePath}` as any;
-  const [_, URL] = fullURL.match(/(.*)[.](.*)/);
+  const fullURL = `${url}${version ? version + "/" : ""}${modulePath}`;
+  const [_, URL] = fullURL.match(/(.*)[.](.*)/)!;
   return URL;
 };
 
-export const resolveFullName = (serviceManifest: any) => {
+export const resolveFullName = (serviceManifest: Manifest) => {
   // 一般 name 和 entryPoint 是同名的
   const { bundleName, name, entryPoint } = serviceManifest;
   return `${bundleName}.${name || entryPoint}`;

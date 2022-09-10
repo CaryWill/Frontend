@@ -15,11 +15,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["reflect-metadata"],
+    "types": ["reflect-metadata", "node"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "composite": true,
-    "typeRoots": ["./src/types"]
+    "typeRoots": ["./src/types"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src", "vite.config.ts"]
 }

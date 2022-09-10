@@ -3,7 +3,7 @@ import "reflect-metadata";
 
 @injectable()
 export class ModuleService {
-  registerModule(name, url) {
+  registerModule(name: string, url: string) {
     globalThis.requirejs.config({
       paths: {
         [name]: url,
@@ -11,15 +11,15 @@ export class ModuleService {
     });
   }
 
-  loadModule(name) {
+  loadModule(name: string) {
     return new Promise((resolve, reject) => {
       globalThis.requirejs(
         [name],
-        (module) => {
+        (module: any) => {
           resolve(module);
         },
-        (err) => {
-          reject(`${name} module load failed`);
+        (err: string) => {
+          reject(`${name} module load failed, ${err}`);
         }
       );
     });
