@@ -1,0 +1,66 @@
+<body>
+  <script src="https://requirejs.org/docs/release/2.3.6/minified/require.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min.css"
+  />
+  <script>
+    requirejs.config({
+      paths: {
+        antd: "https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min",
+        react:
+          "https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min",
+        "react-dom":
+          "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min",
+        moment:
+          "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min",
+      },
+    });
+  </script>
+  <script>
+    globalThis.requirejs(
+      ["react", "react-dom", "antd"],
+      (react, reactDom, antd) => {
+        antd.message.success("from root window");
+      }
+    );
+  </script>
+  <iframe
+    srcdoc="
+    <script src='https://requirejs.org/docs/release/2.3.6/minified/require.js'></script>
+    <link
+      rel='stylesheet'
+      href='https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min.css'
+    />
+    <body>
+    <script>
+      globalThis.requirejs.config({
+        paths: {
+          antd: 'https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min',
+          react:
+            'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min',
+          'react-dom':
+            'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min',
+          moment:
+            'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min',
+        },
+      });
+      globalThis.parent.requirejs(
+        ['antd'],
+        (antd) => {
+          globalThis.define('PAntd', antd)
+        }
+      );
+      setTimeout(() => {
+        globalThis.require(['PAntd'], pantd => {
+           pantd.message.success('from inner iframe');
+        })
+        globalThis.require(['antd'], antd => {
+           antd.message.success('from inner iframe');
+        })
+      }, 1000)
+    </script>
+    </body>
+    "
+  />
+</body>
